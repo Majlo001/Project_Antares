@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Rect, Line } from 'react-konva';
 import convexHull from 'convex-hull';
 import { useDrop } from 'react-dnd';
+import ContextMenu from './ContextMenu';
 
 const ItemTypes = {
 	OBJECT: 'object',
@@ -24,6 +25,62 @@ const DraggableCanvas = () => {
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 });
   const minScale = 0.1;
   const maxScale = 3;
+
+
+	const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0 });
+
+  const handleRightClick = (e) => {
+    e.evt.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.evt.clientX,
+      y: e.evt.clientY,
+    });
+  };
+
+	const handleSelect = async (option) => {
+    setContextMenu({ ...contextMenu, visible: false });
+
+    if (option.value === 'rectangle') {
+      setShapes([...shapes, { type: 'rectangle', x: contextMenu.x, y: contextMenu.y }]);
+    } 
+		else if (option.value === 'row_of_rectangles') {
+      const count = Math.min(parseInt(prompt('Enter the number of rectangles in the row:')), 20);
+
+      if (count > 0) {
+        const newShapes = [];
+				let counterShapes = 1;
+
+				for (let i = 0; i < count; i++) {
+					const newId = `rect${shapes.length + counterShapes}`;
+					counterShapes++;
+					newShapes.push({
+						id: newId,
+						x: contextMenu.x + i * 60, 
+						y: contextMenu.y,
+						width: 50,
+						height: 50,
+						isDragging: false,
+						selected: true,
+					});
+				}
+
+				console.log("created row of rectangles");
+				console.log(newShapes);
+				console.log(shapes);
+		
+				setShapes([...shapes, ...newShapes]);
+      }
+    }
+  };
+
+  const contextMenuOptions = [
+    { label: 'One seat', value: 'rectangle' },
+    { label: 'Row of seats', value: 'row_of_rectangles' },
+  ];
+
+
+
 
 
 	const [, drop] = useDrop(() => ({
@@ -104,7 +161,7 @@ const DraggableCanvas = () => {
     let counterShapes = 1;
     const selectedShapes = shapes.filter((shape) => shape.selected);
     selectedShapes.forEach((shape) => {
-        shape.selected = false;
+      shape.selected = false;
     });
     const newShapes = selectedShapes.map((shape) => {
       const newId = `rect${shapes.length + counterShapes}`;
@@ -245,7 +302,7 @@ const DraggableCanvas = () => {
   };
 
   return (
-		<div ref={drop} style={{ flex: 1, padding: '10px' }}>
+		<div ref={drop} style={{ flex: 1, padding: '10px' }} onContextMenu={(e) => e.preventDefault()}>
 			<Stage
 				width={2*window.innerWidth}
 				height={2* window.innerHeight}
@@ -257,6 +314,7 @@ const DraggableCanvas = () => {
 				onMouseDown={handleMouseDown}
 				onMouseMove={handleMouseMove}
 				onMouseUp={handleMouseUp}
+				onContextMenu={handleRightClick}
 				ref={stageRef}
 			>
 				<Layer 
@@ -298,6 +356,16 @@ const DraggableCanvas = () => {
 					)}
 				</Layer>
 			</Stage>
+
+			{contextMenu.visible && (
+        <ContextMenu 
+					x={contextMenu.x}
+					y={contextMenu.y}
+					options={contextMenuOptions}
+					onSelect={handleSelect}
+					/>
+      )}
+
 		</div>
   );
 };
