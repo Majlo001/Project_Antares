@@ -1,5 +1,6 @@
 package com.majlo.antares.model.events;
 
+import com.majlo.antares.model.location.Location;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Table(name = "antares_event")
-@EqualsAndHashCode(exclude = "eventSeries")
 public class Event {
 
     @Id
@@ -26,12 +26,21 @@ public class Event {
     private EventStatus status;
 
     @ManyToOne
-//    @JsonBackReference
     @JoinColumn(name = "event_series_id")
     private EventSeries eventSeries;
 
-    private LocalDateTime dateTime;
-    private String location;            //  TODO: Change to Location object
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
+
+
+    private LocalDateTime eventDateStart;
+    private LocalDateTime eventDateEnd;
+    private LocalDateTime ticketPurchaseDateStart;
+    private LocalDateTime ticketPurchaseDateEnd;
+
+    private Long maxReservationsPerUser;
+    private Boolean forceChoosingWithoutBreaks;
 
 //    private String image;
 //    private String link;
@@ -42,5 +51,6 @@ public class Event {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime deletedAt;
+    private LocalDateTime archivedAt;
+    private LocalDateTime deletedAt;    // TODO: Implement soft delete
 }

@@ -34,6 +34,7 @@ public class EventSeriesController {
                 .toList();
     }
 
+
     @GetMapping("/{id}")
     public EventSeriesDto getEventSeries(@PathVariable Long id) {
         EventSeries eventSeries = eventSeriesRepository.findById(id)
@@ -105,24 +106,21 @@ public class EventSeriesController {
         Event event1 = Event.builder()
                 .name("Sample Event 1")
                 .description("Description for event 1")
-                .dateTime(LocalDateTime.now().plusDays(1))
-                .location("Location 1")
+                .eventDateStart(LocalDateTime.now().plusDays(1))
                 .eventSeries(eventSeries)
                 .build();
 
         Event event2 = Event.builder()
                 .name("Sample Event 2")
                 .description("Description for event 2")
-                .dateTime(LocalDateTime.now().plusDays(2))
-                .location("Location 2")
+                .eventDateStart(LocalDateTime.now().plusDays(2))
                 .eventSeries(eventSeries)
                 .build();
 
         Event event3 = Event.builder()
                 .name("Sample Event 3")
                 .description("Description for event 3")
-                .dateTime(LocalDateTime.now().plusDays(3))
-                .location("Location 3")
+                .eventDateStart(LocalDateTime.now().plusDays(3))
                 .eventSeries(eventSeries)
                 .build();
 

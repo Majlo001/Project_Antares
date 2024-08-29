@@ -2,6 +2,7 @@ package com.majlo.antares.dtos.events;
 
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.events.EventStatus;
+import com.majlo.antares.model.location.Location;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,8 +22,11 @@ public class EventDtoWithoutEventSeries {
     private String description;
     private EventStatus status;
 //    private EventSeries eventSeries;
-    private LocalDateTime dateTime;
-    private String location;
+    private LocalDateTime eventDateStart;
+    private LocalDateTime eventDateEnd;
+    private LocalDateTime ticketPurchaseDateStart;
+    private LocalDateTime ticketPurchaseDateEnd;
+    private Location location;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -34,7 +38,10 @@ public class EventDtoWithoutEventSeries {
                 .description(description)
                 .status(status)
 //                .eventSeries(eventSeries)
-                .dateTime(dateTime)
+                .eventDateStart(eventDateStart)
+                .eventDateEnd(eventDateEnd)
+                .ticketPurchaseDateStart(ticketPurchaseDateStart)
+                .ticketPurchaseDateEnd(ticketPurchaseDateEnd)
                 .location(location)
                 .createdAt(createdAt)
                 .updatedAt(updatedAt)
@@ -49,7 +56,10 @@ public class EventDtoWithoutEventSeries {
                 .description(event.getDescription())
                 .status(event.getStatus())
 //                .eventSeries(event.getEventSeries())
-                .dateTime(event.getDateTime())
+                .eventDateStart(event.getEventDateStart())
+                .eventDateEnd(event.getEventDateEnd())
+                .ticketPurchaseDateEnd(event.getTicketPurchaseDateEnd())
+                .ticketPurchaseDateStart(event.getTicketPurchaseDateStart())
                 .location(event.getLocation())
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
