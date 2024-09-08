@@ -45,10 +45,14 @@ public class EventController {
             @RequestParam(required = false) LocalDateTime dateStart,
             @RequestParam(required = false) LocalDateTime dateEnd,
             @RequestParam(required = false) String tag,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "30") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        if (page < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number must be greater than or equal to 1");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         Specification<Event> specification = EventResponseSpecification.filterByCriteria(location, dateStart, dateEnd, tag);
         Page<Event> eventPage = eventRepository.findAll(specification, pageable);
@@ -57,7 +61,7 @@ public class EventController {
 
         return EventResponseDto.builder()
                 .events(eventDtos)
-                .pageNo(eventPage.getNumber() + 1)
+                .pageNo(eventPage.getNumber())
                 .pageSize(eventPage.getSize())
                 .totalElements(eventPage.getTotalElements())
                 .totalPages(eventPage.getTotalPages())

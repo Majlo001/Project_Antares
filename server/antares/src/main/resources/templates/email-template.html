@@ -1,0 +1,14 @@
+!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Email</title>
+</head>
+<body>
+<h1>Witaj,</h1>
+<p>Dziękujemy za skorzystanie z naszej usługi.</p>
+<p>Twoje zamówienie: <span th:text="${orderNumber}"></span></p>
+<p>Data zamówienia: <span th:text="${orderDate}"></span></p>
+<p>Serdecznie pozdrawiamy,<br>Twój Zespół</p>
+</body>
+</html>
