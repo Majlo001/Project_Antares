@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Table(name = "transaction_item")
-public class TransactionItem {
+public class TransactionEntityItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +19,7 @@ public class TransactionItem {
 
     @ManyToOne
     @JoinColumn(name = "transaction_id")
-    private Transaction transaction;
+    private TransactionEntity transactionEntity;
 
     @OneToOne
     @JoinColumn(name = "event_seat_status_id")

@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 @Builder
 @Table(name = "transaction")
-public class Transaction {
+public class TransactionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +22,8 @@ public class Transaction {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
-    private List<TransactionItem> items;
+    @OneToMany(mappedBy = "transactionEntity", cascade = CascadeType.ALL)
+    private List<TransactionEntityItem> transactionEntityItems;
 
     private double totalAmount;
 

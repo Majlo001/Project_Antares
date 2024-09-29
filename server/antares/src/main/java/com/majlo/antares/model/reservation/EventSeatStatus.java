@@ -3,7 +3,7 @@ package com.majlo.antares.model.reservation;
 import com.majlo.antares.model.User;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.Seat;
-import com.majlo.antares.model.transaction.TransactionItem;
+import com.majlo.antares.model.transaction.TransactionEntityItem;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -34,11 +34,20 @@ public class EventSeatStatus {
 
     /* If null, then the seat is not bought */
     @OneToOne(mappedBy = "seatStatus", cascade = CascadeType.ALL)
-    private TransactionItem transactionItem;
+    private TransactionEntityItem transactionEntityItem;
 
     private boolean isSeatUnavailable;
-    private boolean isSeatReserved;
 
     private LocalDateTime reservationTime;
     private LocalDateTime expirationTime;
+//    private boolean paid;
+
+
+    public boolean isReserved() {
+        return user != null;
+    }
+
+    public boolean isPaid() {
+        return transactionEntityItem != null;
+    }
 }
