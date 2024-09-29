@@ -25,4 +25,9 @@ public class Seat {
 
 //    @OneToMany(mappedBy = "seat")
 //    private List<Reservation> reservations;
+
+    private int positionX;
+    private int positionY;
+    private int positionRotation;
+    private boolean seatForDisabled;
 }

@@ -34,7 +34,7 @@ public class EmailService {
         helper.setTo(emailAddrToSend);
         helper.setText(html, true);
         helper.setSubject(subject);
-        helper.setFrom("twoj_adres_email@gmail.com");
+        helper.setFrom("majlo.office@gmail.com");
 
         javaMailSender.send(message);
     }

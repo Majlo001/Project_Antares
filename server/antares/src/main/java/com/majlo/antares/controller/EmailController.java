@@ -20,8 +20,8 @@ public class EmailController {
         variables.put("orderNumber", "123456");
         variables.put("orderDate", "2024-09-08");
 
-        emailService.sendEmailWithTemplate("odbiorca@example.com", "Twoje zamówienie", variables);
+        emailService.sendEmailWithTemplate("szmilosz01@gmail.com", "Twoje zamówienie", variables);
 
-        return "Email wysłany";
+        return "Email send.";
     }
 }
