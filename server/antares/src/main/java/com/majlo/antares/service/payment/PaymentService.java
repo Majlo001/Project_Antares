@@ -9,6 +9,7 @@ import com.majlo.antares.repository.reservation.EventSeatStatusRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityItemRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityRepository;
 import com.majlo.antares.service.UserService;
+import com.majlo.antares.service.reservation.EventSeatStatusService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,14 @@ public class PaymentService {
     private final EventSeatStatusRepository eventSeatStatusRepository;
 
     private final UserService userService;
+    private final EventSeatStatusService eventSeatStatusService;
 
-    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService) {
+    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService, EventSeatStatusService eventSeatStatusService) {
         this.transactionEntityRepository = transactionEntityRepository;
         this.transactionEntityItemRepository = transactionEntityItemRepository;
         this.eventSeatStatusRepository = eventSeatStatusRepository;
         this.userService = userService;
+        this.eventSeatStatusService = eventSeatStatusService;
     }
 
     /** Payment for multiple seats */
@@ -61,6 +64,9 @@ public class PaymentService {
             transactionEntityItemRepository.save(transactionItem);
             seatStatus.setTransactionEntityItem(transactionItem);
             eventSeatStatusRepository.save(seatStatus);
+
+
+            eventSeatStatusService.markAsPaid(seatStatus.getId());
         }
 
         return transactionEntityRepository.save(transactionEntity);

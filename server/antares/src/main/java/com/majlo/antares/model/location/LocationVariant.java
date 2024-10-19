@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @Builder
-@Table(name = "location_vatiant")
+@Table(name = "location_variant")
 public class LocationVariant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

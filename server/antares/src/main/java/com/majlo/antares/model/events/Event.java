@@ -1,6 +1,7 @@
 package com.majlo.antares.model.events;
 
 import com.majlo.antares.model.location.Location;
+import com.majlo.antares.model.location.LocationVariant;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,13 +34,17 @@ public class Event {
     @JoinColumn(name = "location_id")
     private Location location;
 
+    @ManyToOne
+    @JoinColumn(name = "location_variant_id")
+    private LocationVariant locationVariant;
+
 
     private LocalDateTime eventDateStart;
     private LocalDateTime eventDateEnd;
     private LocalDateTime ticketPurchaseDateStart;
     private LocalDateTime ticketPurchaseDateEnd;
 
-    private Long maxReservationsPerUser;
+    private Integer maxReservationsPerUser;
     private Boolean forceChoosingWithoutBreaks;
 
 //    private String image;

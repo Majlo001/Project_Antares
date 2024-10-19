@@ -27,12 +27,15 @@ public class EventSeatStatus {
     @JoinColumn(name = "event_id")
     private Event event;
 
-    /* If null, then the seat is not reserved */
+    /** Session ID for non logged users */
+    private String sessionId;
+
+    /** If null, then the seat is not reserved */
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
-    /* If null, then the seat is not bought */
+    /** If null, then the seat is not bought */
     @OneToOne(mappedBy = "seatStatus", cascade = CascadeType.ALL)
     private TransactionEntityItem transactionEntityItem;
 
@@ -44,7 +47,7 @@ public class EventSeatStatus {
 
 
     public boolean isReserved() {
-        return user != null;
+        return (user != null || sessionId != null) && transactionEntityItem == null;
     }
 
     public boolean isPaid() {

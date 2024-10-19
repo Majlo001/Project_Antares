@@ -35,13 +35,15 @@ public class UserAuthenticationProvider {
 
     public String createToken(UserDto userDto) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + 3600000); // 1 hour
+        Date validity = new Date(now.getTime() + 4 * 3600000); // 4 hours
 
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
         return JWT.create()
                 .withSubject(userDto.getLogin())
                 .withIssuedAt(now)
                 .withExpiresAt(validity)
+                .withClaim("user_id", userDto.getId())
+                .withClaim("login", userDto.getLogin())
                 .withClaim("role", userDto.getRole().name())
                 .sign(algorithm);
     }

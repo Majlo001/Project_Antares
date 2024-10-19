@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -25,6 +26,6 @@ public class Sector {
     @JoinColumn(name = "location_variant_id")
     private LocationVariant locationVariant;
 
-    @OneToMany(mappedBy = "sector")
-    private List<Row> rows;
+    @OneToMany(mappedBy = "sector", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Row> rows = new ArrayList<>();
 }
