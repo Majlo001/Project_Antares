@@ -32,6 +32,6 @@ public class TransactionEntityItem {
     private String ticketType;
 
 
-    private LocalDateTime purchaseDate;  // Data zakupu
+    private LocalDateTime purchaseDate;
 }
 

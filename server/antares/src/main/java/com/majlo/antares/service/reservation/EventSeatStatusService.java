@@ -53,6 +53,7 @@ public class EventSeatStatusService {
      * @param seatRequests list of seat reservation requests
      * @param userId       user id
      */
+    // TODO: Fix to make user can reserve seat without being logged in
     @Transactional
     public void reserveSeats(List<SeatReservationRequestDto> seatRequests, Long userId, String sessionId) {
         for (SeatReservationRequestDto request : seatRequests) {
@@ -60,7 +61,7 @@ public class EventSeatStatusService {
                 throw new IllegalArgumentException("No seats requested for reservation.");
             }
 
-            Long eventId = seatRequests.get(0).getEventId();
+            Long eventId = request.getEventId();
 
             EventSeatStatus seatStatus = eventSeatStatusRepository
                     .findBySeatIdAndEventId(request.getSeatId(), request.getEventId())
@@ -109,6 +110,8 @@ public class EventSeatStatusService {
     public void releaseExpiredReservations() {
         LocalDateTime now = LocalDateTime.now();
 
+        System.out.println("Count of reserved seats: " + reservedSeats.size());
+
         for (EventSeatStatus seatStatus : reservedSeats) {
             if (seatStatus.getExpirationTime().isBefore(now) && !seatStatus.isPaid()) {
 
@@ -123,11 +126,7 @@ public class EventSeatStatusService {
         }
     }
 
-    public void markAsPaid(Long seatStatusId) {
-        EventSeatStatus seatStatus = eventSeatStatusRepository.findById(seatStatusId)
-                .orElseThrow(() -> new RuntimeException("SeatStatus not found"));
-
-        eventSeatStatusRepository.save(seatStatus);
-        reservedSeats.remove(seatStatus);
+    public void markAsPaid(Long seatStatusID) {
+        reservedSeats.removeIf(seatStatus -> seatStatus.getId().equals(seatStatusID));
     }
 }

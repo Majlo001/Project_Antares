@@ -13,11 +13,13 @@ public class ReservationScheduler {
     @Autowired
     public ReservationScheduler(EventSeatStatusService eventSeatStatusService) {
         this.eventSeatStatusService = eventSeatStatusService;
+        System.out.println("ReservationScheduler initialized.");
     }
 
     /** Check for expired reservations every minute */
     @Scheduled(fixedRate = 60000)
     public void checkExpiredReservations() {
+        System.out.println("Checking for expired reservations...");
         eventSeatStatusService.releaseExpiredReservations();
     }
 }

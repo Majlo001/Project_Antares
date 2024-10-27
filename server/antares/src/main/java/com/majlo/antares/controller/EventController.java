@@ -54,7 +54,7 @@ public class EventController {
     private SeatRepository seatRepository;
 
     @Autowired
-    private EventSeatStatusRepository seatStatusRepository;
+    private EventSeatStatusRepository eventSeatStatusRepository;
 
 //    @GetMapping
 //    public List<EventDto> getAllEvents() {
@@ -94,6 +94,7 @@ public class EventController {
                 .build();
     }
 
+    // TODO: Change url
     @GetMapping("/newwwww/{id}")
     public EventDto getEvent(@PathVariable Long id) {
         return eventRepository.findById(id)
@@ -186,7 +187,7 @@ public class EventController {
                     seatStatus.setSeatUnavailable(false);
                     seatStatus.setReservationTime(null);
                     seatStatus.setExpirationTime(null);
-                    seatStatusRepository.save(seatStatus);
+                    eventSeatStatusRepository.save(seatStatus);
                 }
             }
         }

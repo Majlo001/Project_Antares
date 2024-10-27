@@ -43,7 +43,6 @@ public class EventSeatStatus {
 
     private LocalDateTime reservationTime;
     private LocalDateTime expirationTime;
-//    private boolean paid;
 
 
     public boolean isReserved() {
@@ -52,5 +51,17 @@ public class EventSeatStatus {
 
     public boolean isPaid() {
         return transactionEntityItem != null;
+    }
+
+    public void reserveSeat(User user, String sessionId, long reservationDurationMinutes) {
+        if (this.isReserved()) {
+            throw new IllegalStateException("This seat is already reserved.");
+        }
+
+        this.user = user;
+        this.sessionId = sessionId;
+        this.reservationTime = LocalDateTime.now();
+        this.expirationTime = reservationTime.plusMinutes(reservationDurationMinutes);
+        this.isSeatUnavailable = true;
     }
 }

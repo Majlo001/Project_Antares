@@ -2,10 +2,12 @@ package com.majlo.antares.model.events;
 
 import com.majlo.antares.model.location.Location;
 import com.majlo.antares.model.location.LocationVariant;
+import com.majlo.antares.model.reservation.EventSeatStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,6 +27,11 @@ public class Event {
 
     @ManyToOne
     private EventStatus status;
+
+    @OneToMany(mappedBy = "event",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<EventSeatStatus> eventSeatStatuses;
 
     @ManyToOne
     @JoinColumn(name = "event_series_id")

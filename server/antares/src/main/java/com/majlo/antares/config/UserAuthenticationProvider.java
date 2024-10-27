@@ -1,6 +1,7 @@
 package com.majlo.antares.config;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.majlo.antares.dtos.UserDto;
 import com.majlo.antares.service.UserService;
 
@@ -22,16 +23,16 @@ import java.util.Base64;
 @Component
 public class UserAuthenticationProvider {
 
-    @Value("${security.jwt.token.secret-key:secret-key}")
+    @Value("${security.jwt.token.secret-key}")
     private String secretKey;
 
     private final UserService userService;
 
-    @PostConstruct
-    protected void init() {
-        // this is to avoid having the raw secret key available in the JVM
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-    }
+//    @PostConstruct
+//    protected void init() {
+//        /** this is to avoid having the raw secret key available in the JVM */
+//        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+//    }
 
     public String createToken(UserDto userDto) {
         Date now = new Date();
@@ -51,14 +52,16 @@ public class UserAuthenticationProvider {
     public Authentication validateToken(String token) {
         Algorithm algorithm = Algorithm.HMAC256(secretKey);
 
-        JWTVerifier verifier = JWT.require(algorithm)
-                .build();
+        JWTVerifier verifier = JWT.require(algorithm).build();
 
-        DecodedJWT decoded = verifier.verify(token);
-
-        UserDto userDto = userService.findByLogin(decoded.getSubject());
-
-        return new UsernamePasswordAuthenticationToken(userDto, null, Arrays.asList(userDto.getRole()));
+        try {
+            DecodedJWT decoded = verifier.verify(token);
+            UserDto userDto = userService.findByLogin(decoded.getSubject());
+            return new UsernamePasswordAuthenticationToken(userDto, null, Arrays.asList(userDto.getRole()));
+        }
+        catch (JWTVerificationException e) {
+            throw new RuntimeException("Invalid token", e);
+        }
     }
 
 }

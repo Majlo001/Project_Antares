@@ -38,6 +38,7 @@ public class PaymentService {
     @Transactional
     public TransactionEntity payForMultipleSeats(List<SeatReservationRequestDto> seatRequests, Long userId, String paymentMethod, String discountCode) {
         TransactionEntity transactionEntity = createTransaction(userId, paymentMethod);
+        Double totalAmount = 0.0;
 
         for (SeatReservationRequestDto request : seatRequests) {
             EventSeatStatus seatStatus = eventSeatStatusRepository
@@ -48,8 +49,8 @@ public class PaymentService {
                 throw new RuntimeException("Seat already paid for");
             }
 
-            /** Update seat status */
-            eventSeatStatusRepository.save(seatStatus);
+//            /** Update seat status */
+//            eventSeatStatusRepository.save(seatStatus);
 
             /** Create transaction item */
             TransactionEntityItem transactionItem = TransactionEntityItem.builder()
@@ -61,6 +62,8 @@ public class PaymentService {
                     .purchaseDate(LocalDateTime.now())
                     .build();
 
+            totalAmount += transactionItem.getFinalPrice();
+
             transactionEntityItemRepository.save(transactionItem);
             seatStatus.setTransactionEntityItem(transactionItem);
             eventSeatStatusRepository.save(seatStatus);
@@ -68,6 +71,8 @@ public class PaymentService {
 
             eventSeatStatusService.markAsPaid(seatStatus.getId());
         }
+
+        transactionEntity.setTotalAmount(totalAmount);
 
         return transactionEntityRepository.save(transactionEntity);
     }
