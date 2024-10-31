@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
 
 
 export const getAuthToken = () => {
@@ -12,6 +13,24 @@ export const setAuthHeader = (token) => {
       window.localStorage.removeItem("auth_token");
     }
 };
+
+
+export const getDataFromToken = () => {
+    const token = getAuthToken();
+    if (!token) {
+        return null;
+    }
+    
+    try {
+        return jwtDecode(token);
+    }
+    catch (error) {
+        console.error("Błąd dekodowania tokena:", error);
+        return null;
+    }
+};
+
+
 
 axios.defaults.baseURL = 'http://localhost:8080';
 axios.defaults.headers.post['Content-Type'] = 'application/json';

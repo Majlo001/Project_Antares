@@ -1,6 +1,6 @@
 package com.majlo.antares.model.responses;
 
-import com.majlo.antares.dtos.events.EventDto;
+import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class EventResponseDto {
-    private List<EventDto> events;
+    private List<EventListPreviewDto> events;
     private int pageNo;
     private int pageSize;
     private long totalElements;

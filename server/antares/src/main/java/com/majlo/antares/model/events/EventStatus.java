@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class EventStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long eventCategoryId;
+    private Long id;
 
     @NotEmpty(message = "Event status cannot be empty")
     @NotNull

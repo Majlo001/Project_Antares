@@ -2,6 +2,7 @@ package com.majlo.antares.dtos.events;
 
 import com.majlo.antares.model.events.EventCategory;
 import com.majlo.antares.model.events.EventSeries;
+import com.majlo.antares.model.events.EventTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class EventSeriesDtoWithoutEvents {
     private String description;
     private EventCategory category;
     private String organizer;
-//    private Set<EventTag> eventTags;
+    private Set<EventTag> eventTags;
 
     public EventSeries toEventSeries() {
         EventSeries eventSeries = EventSeries.builder()
@@ -29,6 +30,7 @@ public class EventSeriesDtoWithoutEvents {
                 .description(description)
                 .category(category)
                 .organizer(organizer)
+                .eventTags(eventTags)
                 .build();
         eventSeries.getEvents().forEach(event -> event.setEventSeries(eventSeries));
         return eventSeries;
@@ -41,6 +43,7 @@ public class EventSeriesDtoWithoutEvents {
                 .description(eventSeries.getDescription())
                 .category(eventSeries.getCategory())
                 .organizer(eventSeries.getOrganizer())
+                .eventTags(eventSeries.getEventTags())
                 .build();
     }
 }

@@ -1,19 +1,17 @@
 package com.majlo.antares.controller;
 
 import com.majlo.antares.dtos.events.EventDto;
+import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.events.EventSeries;
 import com.majlo.antares.model.location.*;
-import com.majlo.antares.model.reservation.EventSeatStatus;
 import com.majlo.antares.model.responses.EventResponseDto;
 import com.majlo.antares.repository.events.EventRepository;
 import com.majlo.antares.repository.events.EventSeriesRepository;
 import com.majlo.antares.repository.location.*;
-import com.majlo.antares.repository.reservation.EventSeatStatusRepository;
 import com.majlo.antares.service.reservation.EventSeatStatusService;
 import com.majlo.antares.specifications.EventResponseSpecification;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,44 +25,29 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
     private final EventSeriesRepository eventSeriesRepository;
     private final EventRepository eventRepository;
-    @Autowired
-    private EventSeatStatusService eventSeatStatusService;
+    private final EventSeatStatusService eventSeatStatusService;
+    private final LocationRepository locationRepository;
+    private final LocationVariantRepository locationVariantRepository;
+    private final SectorRepository sectorRepository;
+    private final TicketTypeRepository ticketTypeRepository;
+    private final TicketPriceRepository ticketPriceRepository;
 
-    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository) {
+    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository) {
         this.eventSeriesRepository = eventSeriesRepository;
         this.eventRepository = eventRepository;
+        this.eventSeatStatusService = eventSeatStatusService;
+        this.locationRepository = locationRepository;
+        this.locationVariantRepository = locationVariantRepository;
+        this.sectorRepository = sectorRepository;
+        this.ticketTypeRepository = ticketTypeRepository;
+        this.ticketPriceRepository = ticketPriceRepository;
     }
-
-    @Autowired
-    private LocationRepository locationRepository;
-
-    @Autowired
-    private LocationVariantRepository locationVariantRepository;
-
-    @Autowired
-    private SectorRepository sectorRepository;
-
-    @Autowired
-    private RowRepository rowRepository;
-
-    @Autowired
-    private SeatRepository seatRepository;
-
-    @Autowired
-    private EventSeatStatusRepository eventSeatStatusRepository;
-
-    @Autowired
-    private TicketTypeRepository ticketTypeRepository;
-
-    @Autowired
-    private TicketPriceRepository ticketPriceRepository;
 
 //    @GetMapping
 //    public List<EventDto> getAllEvents() {
@@ -93,15 +76,22 @@ public class EventController {
         Specification<Event> specification = EventResponseSpecification.filterByCriteria(location, dateStart, dateEnd, tag);
         Page<Event> eventPage = eventRepository.findAll(specification, pageable);
 
-        List<EventDto> eventDtos = eventPage.stream().map(EventDto::fromEvent).toList();
+        List<EventListPreviewDto> eventDtos = eventPage.stream().map(EventListPreviewDto::fromEvent).toList();
 
         return EventResponseDto.builder()
                 .events(eventDtos)
-                .pageNo(eventPage.getNumber())
-                .pageSize(eventPage.getSize())
-                .totalElements(eventPage.getTotalElements())
                 .totalPages(eventPage.getTotalPages())
+                .totalElements(eventPage.getTotalElements())
+                .pageNo(page)
                 .build();
+    }
+
+    @PostMapping("/new")
+    @Transactional
+    public ResponseEntity<EventDto> createEvent(@RequestBody EventDto eventDto) {
+        Event event = EventDto.toEvent(eventDto);
+        Event createdEvent = eventRepository.save(event);
+        return new ResponseEntity<>(EventDto.fromEvent(createdEvent), HttpStatus.CREATED);
     }
 
     // TODO: Change url
