@@ -10,6 +10,7 @@ import com.majlo.antares.repository.events.EventRepository;
 import com.majlo.antares.repository.events.EventSeriesRepository;
 import com.majlo.antares.repository.location.*;
 import com.majlo.antares.repository.reservation.EventSeatStatusRepository;
+import com.majlo.antares.service.reservation.EventSeatStatusService;
 import com.majlo.antares.specifications.EventResponseSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @RestController
@@ -32,6 +34,8 @@ import java.util.Set;
 public class EventController {
     private final EventSeriesRepository eventSeriesRepository;
     private final EventRepository eventRepository;
+    @Autowired
+    private EventSeatStatusService eventSeatStatusService;
 
     public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository) {
         this.eventSeriesRepository = eventSeriesRepository;
@@ -55,6 +59,12 @@ public class EventController {
 
     @Autowired
     private EventSeatStatusRepository eventSeatStatusRepository;
+
+    @Autowired
+    private TicketTypeRepository ticketTypeRepository;
+
+    @Autowired
+    private TicketPriceRepository ticketPriceRepository;
 
 //    @GetMapping
 //    public List<EventDto> getAllEvents() {
@@ -103,6 +113,24 @@ public class EventController {
     }
 
 
+    @PostMapping("/testCreateTickets")
+    @Transactional
+    public ResponseEntity<List<TicketType>> createTickets() {
+        TicketType normalTicket = new TicketType();
+        normalTicket.setName("Normal");
+        ticketTypeRepository.save(normalTicket);
+
+        TicketType discountedTicket = new TicketType();
+        discountedTicket.setName("Discounted");
+        ticketTypeRepository.save(discountedTicket);
+
+        List<TicketType> ticketTypes = new ArrayList<>();
+        ticketTypes.add(normalTicket);
+        ticketTypes.add(discountedTicket);
+
+        return new ResponseEntity<>(ticketTypes, HttpStatus.CREATED);
+    }
+
 
     @PostMapping("/test")
     @Transactional
@@ -139,7 +167,7 @@ public class EventController {
         for (int i = 1; i <= 2; i++) {
             Sector sector = new Sector();
             sector.setName("Sector " + i);
-            sector.setType("Sitting");
+            sector.setStanding(false);
             sector.setLocationVariant(locationVariant);
 
             List<Row> rows = new ArrayList<>();
@@ -171,28 +199,60 @@ public class EventController {
             sectors.add(sector);
         }
 
+        Sector sec = new Sector();
+        sec.setName("Sector standing 1");
+        sec.setStanding(true);
+        sec.setStandingCapacity(100);
+        sec.setLocationVariant(locationVariant);
+        sectorRepository.save(sec);
+        sectors.add(sec);
+
         event.setEventSeries(eventSeries);
         event.setLocation(location);
         event.setLocationVariant(locationVariant);
 
         Event createdEvent = eventRepository.save(event);
 
-
+        int count = 1;
         for (Sector sector : sectors) {
-            for (Row row : sector.getRows()) {
-                for (Seat seat : row.getSeats()) {
-                    EventSeatStatus seatStatus = new EventSeatStatus();
-                    seatStatus.setSeat(seat);
-                    seatStatus.setEvent(createdEvent);
-                    seatStatus.setSeatUnavailable(false);
-                    seatStatus.setReservationTime(null);
-                    seatStatus.setExpirationTime(null);
-                    eventSeatStatusRepository.save(seatStatus);
-                }
-            }
+            TicketPrice normalPrice = new TicketPrice();
+            normalPrice.setSector(sector);
+            normalPrice.setEvent(event);
+            normalPrice.setTicketType(ticketTypeRepository.findByName("Normal"));
+            normalPrice.setPrice(50.00 * count);
+            ticketPriceRepository.save(normalPrice);
+
+            TicketPrice discountedPrice = new TicketPrice();
+            discountedPrice.setSector(sector);
+            discountedPrice.setEvent(event);
+            discountedPrice.setTicketType(ticketTypeRepository.findByName("Discounted"));
+            discountedPrice.setPrice(30.00 * count);
+            ticketPriceRepository.save(discountedPrice);
+
+            count++;
         }
 
-
         return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
+    }
+
+    // TODO: Additional function for setting ticket price for sector
+
+    // TODO: Add JWT token, account and role validation
+    @PostMapping("/generateEventSeatStatusEntities")
+    public ResponseEntity<?> generateEventSeatStatusEntities(@RequestParam Long event_id) {
+        try {
+            Event event = eventRepository.findById(event_id).orElseThrow(() ->
+                    new NoSuchElementException("Event with ID " + event_id + " not found"));
+
+            eventSeatStatusService.generateEventSeatStatuses(event);
+            return ResponseEntity.ok("Event seat statuses generated successfully for event ID: " + event_id);
+
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while generating seat statuses: " + e.getMessage());
+        }
     }
 }

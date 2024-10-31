@@ -25,7 +25,7 @@ public class TransactionEntityItem {
     @JoinColumn(name = "event_seat_status_id")
     private EventSeatStatus seatStatus;
 
-//    private double originalPrice;
+    private double originalPrice;
     private double finalPrice;
 
     // TODO: Create a separate table for ticket types eg. "Normal", "Student", "Senior"

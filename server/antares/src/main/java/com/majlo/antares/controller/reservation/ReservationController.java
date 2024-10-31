@@ -42,7 +42,7 @@ public class ReservationController {
 
     /** Seat reservation */
     @PostMapping("/reserve")
-    public ResponseEntity<String> reserveSeats(
+    public ResponseEntity<?> reserveSeats(
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody List<SeatReservationRequestDto> seatRequests,
             HttpServletRequest request) {
@@ -74,13 +74,25 @@ public class ReservationController {
                 sessionId = null;
             }
 
-            eventSeatStatusService.reserveSeats(seatRequests, userId, sessionId);
-            return ResponseEntity.ok("Seats reserved successfully");
+            List<Long> reservedSeatIds = eventSeatStatusService.reserveSeats(seatRequests, userId, sessionId);
+            return ResponseEntity.ok(reservedSeatIds);
+//            return ResponseEntity.ok("Seats reserved successfully");
         }
         catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    // TODO: Implement unreserveSeats method
+    @PostMapping("/unreserve")
+    public ResponseEntity<?> unreserveSeats(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody List<Long> reservedSeatIds,
+            HttpServletRequest request) {
+
+        return ResponseEntity.ok("Seats unreserved successfully");
+    }
+
 
     /** Payment for reserved seats */
     @PostMapping("/pay")
@@ -104,7 +116,7 @@ public class ReservationController {
         }
 
         try {
-            TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatRequests(), userId, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
+            TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatReservations(), userId, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
             return ResponseEntity.ok(transactionEntity);
         }
         catch (RuntimeException e) {

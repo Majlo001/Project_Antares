@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SeatReservationRequestDto {
-    private Long seatId;
-    private Long eventId;
-    private Long sectorId;
+public class SeatReservationTicketTypeDto {
+    private Long eventSeatStatusId;
+    private Long ticketTypeId;
 }

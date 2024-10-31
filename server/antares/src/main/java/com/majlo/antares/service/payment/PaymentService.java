@@ -1,10 +1,13 @@
 package com.majlo.antares.service.payment;
 
 import com.majlo.antares.dtos.reservation.SeatReservationRequestDto;
+import com.majlo.antares.dtos.reservation.SeatReservationTicketTypeDto;
 import com.majlo.antares.model.User;
+import com.majlo.antares.model.location.TicketType;
 import com.majlo.antares.model.reservation.EventSeatStatus;
 import com.majlo.antares.model.transaction.TransactionEntity;
 import com.majlo.antares.model.transaction.TransactionEntityItem;
+import com.majlo.antares.repository.location.TicketTypeRepository;
 import com.majlo.antares.repository.reservation.EventSeatStatusRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityItemRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityRepository;
@@ -22,43 +25,55 @@ public class PaymentService {
     private final TransactionEntityRepository transactionEntityRepository;
     private final TransactionEntityItemRepository transactionEntityItemRepository;
     private final EventSeatStatusRepository eventSeatStatusRepository;
+    private final TicketTypeRepository ticketTypeRepository;
 
     private final UserService userService;
     private final EventSeatStatusService eventSeatStatusService;
 
-    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService, EventSeatStatusService eventSeatStatusService) {
+    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService, EventSeatStatusService eventSeatStatusService, TicketTypeRepository ticketTypeRepository) {
         this.transactionEntityRepository = transactionEntityRepository;
         this.transactionEntityItemRepository = transactionEntityItemRepository;
         this.eventSeatStatusRepository = eventSeatStatusRepository;
         this.userService = userService;
         this.eventSeatStatusService = eventSeatStatusService;
+        this.ticketTypeRepository = ticketTypeRepository;
     }
 
     /** Payment for multiple seats */
     @Transactional
-    public TransactionEntity payForMultipleSeats(List<SeatReservationRequestDto> seatRequests, Long userId, String paymentMethod, String discountCode) {
+    public TransactionEntity payForMultipleSeats(
+            List<SeatReservationTicketTypeDto> seatReservations,
+            Long userId,
+            String paymentMethod,
+            String discountCode) {
         TransactionEntity transactionEntity = createTransaction(userId, paymentMethod);
-        Double totalAmount = 0.0;
+        double totalAmount = 0.0;
 
-        for (SeatReservationRequestDto request : seatRequests) {
+        for (SeatReservationTicketTypeDto reservation : seatReservations) {
             EventSeatStatus seatStatus = eventSeatStatusRepository
-                    .findBySeatIdAndEventId(request.getSeatId(), request.getEventId())
+                    .findById(reservation.getEventSeatStatusId())
                     .orElseThrow(() -> new RuntimeException("Seat not found for event"));
 
             if (seatStatus.isPaid()) {
                 throw new RuntimeException("Seat already paid for");
             }
 
+            TicketType ticketType = ticketTypeRepository.findById(reservation.getTicketTypeId())
+                    .orElseThrow(() -> new RuntimeException("Ticket type not found"));
+
 //            /** Update seat status */
 //            eventSeatStatusRepository.save(seatStatus);
 
             /** Create transaction item */
+            double seatPrice = seatStatus.getSeatPrice(ticketType);
+
+
             TransactionEntityItem transactionItem = TransactionEntityItem.builder()
                     .transactionEntity(transactionEntity)
                     .seatStatus(seatStatus)
-//                    .originalPrice(seatStatus.getSeat().getSeatPrice())
+                    .originalPrice(seatPrice)
 //                    .finalPrice(calculateFinalPrice(seatStatus, discountCode))
-                    .finalPrice(100.50)
+                    .finalPrice(seatPrice)
                     .purchaseDate(LocalDateTime.now())
                     .build();
 
