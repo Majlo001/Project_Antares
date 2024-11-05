@@ -29,7 +29,6 @@ public class EventSeriesDtoWithoutEvents {
                 .name(name)
                 .description(description)
                 .category(category)
-                .organizer(organizer)
                 .eventTags(eventTags)
                 .build();
         eventSeries.getEvents().forEach(event -> event.setEventSeries(eventSeries));
@@ -42,7 +41,6 @@ public class EventSeriesDtoWithoutEvents {
                 .name(eventSeries.getName())
                 .description(eventSeries.getDescription())
                 .category(eventSeries.getCategory())
-                .organizer(eventSeries.getOrganizer())
                 .eventTags(eventSeries.getEventTags())
                 .build();
     }

@@ -1,11 +1,18 @@
 package com.majlo.antares.controller;
 
+import com.majlo.antares.config.UserAuthenticationProvider;
+import com.majlo.antares.dtos.UserDto;
+import com.majlo.antares.dtos.creation.EventCreationDto;
 import com.majlo.antares.dtos.events.EventDto;
 import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
+import com.majlo.antares.model.EventOwner;
+import com.majlo.antares.model.User;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.events.EventSeries;
 import com.majlo.antares.model.location.*;
 import com.majlo.antares.model.responses.EventResponseDto;
+import com.majlo.antares.repository.EventOwnerRepository;
+import com.majlo.antares.repository.UserRepository;
 import com.majlo.antares.repository.events.EventRepository;
 import com.majlo.antares.repository.events.EventSeriesRepository;
 import com.majlo.antares.repository.location.*;
@@ -18,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,8 +45,11 @@ public class EventController {
     private final SectorRepository sectorRepository;
     private final TicketTypeRepository ticketTypeRepository;
     private final TicketPriceRepository ticketPriceRepository;
+    private final UserAuthenticationProvider userAuthenticationProvider;
+    private final UserRepository userRepository;
+    private final EventOwnerRepository eventOwnerRepository;
 
-    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository) {
+    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, UserAuthenticationProvider userAuthenticationProvider, UserRepository userRepository, EventOwnerRepository eventOwnerRepository) {
         this.eventSeriesRepository = eventSeriesRepository;
         this.eventRepository = eventRepository;
         this.eventSeatStatusService = eventSeatStatusService;
@@ -47,6 +58,9 @@ public class EventController {
         this.sectorRepository = sectorRepository;
         this.ticketTypeRepository = ticketTypeRepository;
         this.ticketPriceRepository = ticketPriceRepository;
+        this.userAuthenticationProvider = userAuthenticationProvider;
+        this.userRepository = userRepository;
+        this.eventOwnerRepository = eventOwnerRepository;
     }
 
 //    @GetMapping
@@ -86,16 +100,36 @@ public class EventController {
                 .build();
     }
 
-    @PostMapping("/new")
+    @PostMapping("/create")
     @Transactional
-    public ResponseEntity<EventDto> createEvent(@RequestBody EventDto eventDto) {
-        Event event = EventDto.toEvent(eventDto);
-        Event createdEvent = eventRepository.save(event);
-        return new ResponseEntity<>(EventDto.fromEvent(createdEvent), HttpStatus.CREATED);
+    public ResponseEntity<?> createEvent(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody EventCreationDto eventcreationDto) {
+
+        Long userId = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            Authentication authentication = userAuthenticationProvider.validateToken(token);
+            userId = ((UserDto) authentication.getPrincipal()).getId();
+            EventOwner eventOwner = eventOwnerRepository.findById(userId).orElseThrow();
+
+            if (eventOwner == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not an event owner");
+            }
+
+
+            Event event = eventcreationDto.toEvent();
+            event.setCreatedAt(LocalDateTime.now());
+            event.setEventOwner(eventOwner);
+            Event createdEvent = eventRepository.save(event);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(EventDto.fromEvent(createdEvent));
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid");
     }
 
-    // TODO: Change url
-    @GetMapping("/newwwww/{id}")
+    @GetMapping("/event/{id}")
     public EventDto getEvent(@PathVariable Long id) {
         return eventRepository.findById(id)
                 .map(EventDto::fromEvent)
@@ -122,108 +156,6 @@ public class EventController {
     }
 
 
-    @PostMapping("/test")
-    @Transactional
-    public ResponseEntity<Event> createComplexEventAutomatically() {
-        Event event = new Event();
-        event.setName("Automatic Rock Concert");
-        event.setDescription("An awesome rock concert created automatically");
-        event.setEventDateStart(LocalDateTime.now().plusDays(10));
-        event.setEventDateEnd(LocalDateTime.now().plusDays(10).plusHours(4));
-        event.setMaxReservationsPerUser(5);
-
-        EventSeries eventSeries = new EventSeries();
-        eventSeries.setName("Auto Music Festival");
-        eventSeries.setDescription("A festival of awesome music generated automatically");
-        eventSeriesRepository.save(eventSeries);
-
-        Location location = new Location();
-        location.setName("Auto Stadium");
-        location.setCity("Auto City");
-        location.setCountry("Auto Country");
-        location.setPostalCode("12345");
-        locationRepository.save(location);
-
-
-        LocationVariant locationVariant = new LocationVariant();
-        locationVariant.setName("Main Football Stadium Variant");
-        locationVariant.setDescription("A variant of the stadium for large events");
-        locationVariant.setLocation(location);
-        locationVariantRepository.save(locationVariant);
-
-        List<Sector> sectors = new ArrayList<>();
-
-
-        for (int i = 1; i <= 2; i++) {
-            Sector sector = new Sector();
-            sector.setName("Sector " + i);
-            sector.setStanding(false);
-            sector.setLocationVariant(locationVariant);
-
-            List<Row> rows = new ArrayList<>();
-
-            for (int rowNum = 1; rowNum <= 5; rowNum++) {
-                Row row = new Row();
-                row.setRowNumber(rowNum);
-                row.setSector(sector);
-
-                List<Seat> seats = new ArrayList<>();
-
-                for (int seatNum = 1; seatNum <= 10; seatNum++) {
-                    Seat seat = new Seat();
-                    seat.setSeatNumber(seatNum);
-                    seat.setPositionX(seatNum * 5);
-                    seat.setPositionY(rowNum * 10);
-                    seat.setPositionRotation(0);
-                    seat.setSeatForDisabled(seatNum % 5 == 0);
-                    seat.setRow(row);
-                    seats.add(seat);
-                }
-
-                row.setSeats(seats);
-                rows.add(row);
-            }
-
-            sector.setRows(rows);
-            sectorRepository.save(sector);
-            sectors.add(sector);
-        }
-
-        Sector sec = new Sector();
-        sec.setName("Sector standing 1");
-        sec.setStanding(true);
-        sec.setStandingCapacity(100);
-        sec.setLocationVariant(locationVariant);
-        sectorRepository.save(sec);
-        sectors.add(sec);
-
-        event.setEventSeries(eventSeries);
-        event.setLocation(location);
-        event.setLocationVariant(locationVariant);
-
-        Event createdEvent = eventRepository.save(event);
-
-        int count = 1;
-        for (Sector sector : sectors) {
-            TicketPrice normalPrice = new TicketPrice();
-            normalPrice.setSector(sector);
-            normalPrice.setEvent(event);
-            normalPrice.setTicketType(ticketTypeRepository.findByName("Normal"));
-            normalPrice.setPrice(50.00 * count);
-            ticketPriceRepository.save(normalPrice);
-
-            TicketPrice discountedPrice = new TicketPrice();
-            discountedPrice.setSector(sector);
-            discountedPrice.setEvent(event);
-            discountedPrice.setTicketType(ticketTypeRepository.findByName("Discounted"));
-            discountedPrice.setPrice(30.00 * count);
-            ticketPriceRepository.save(discountedPrice);
-
-            count++;
-        }
-
-        return new ResponseEntity<>(createdEvent, HttpStatus.CREATED);
-    }
 
     // TODO: Additional function for setting ticket price for sector
 

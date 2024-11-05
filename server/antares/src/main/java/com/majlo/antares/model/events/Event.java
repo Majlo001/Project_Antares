@@ -1,5 +1,7 @@
 package com.majlo.antares.model.events;
 
+import com.majlo.antares.model.EventOwner;
+import com.majlo.antares.model.User;
 import com.majlo.antares.model.location.Location;
 import com.majlo.antares.model.location.LocationVariant;
 import com.majlo.antares.model.reservation.EventSeatStatus;
@@ -25,9 +27,13 @@ public class Event {
 
     @Lob
     private String description;
+    private String shortDescription;
 
     @ManyToOne
     private EventStatus status;
+
+    @ManyToOne
+    private EventOwner eventOwner;
 
     @OneToMany(mappedBy = "event",
             cascade = CascadeType.ALL,
@@ -55,9 +61,8 @@ public class Event {
     private Integer maxReservationsPerUser;
     private Boolean forceChoosingWithoutBreaks;
 
-//    private String image;
+    private String mainImage;
 //    private String link;
-//    private String price;
 //    private String capacity;
 //    private String registered;
 

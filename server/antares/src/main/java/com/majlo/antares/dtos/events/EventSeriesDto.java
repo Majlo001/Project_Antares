@@ -19,7 +19,6 @@ public class EventSeriesDto {
     private String name;
     private String description;
     private EventCategory category;
-    private String organizer;
     private Set<EventDtoWithoutEventSeries> events;
 //    private Set<EventTag> eventTags;
 
@@ -29,7 +28,6 @@ public class EventSeriesDto {
                 .name(name)
                 .description(description)
                 .category(category)
-                .organizer(organizer)
                 .events(EventDtoWithoutEventSeries.fromEventDtoSet(events))
                 .build();
         eventSeries.getEvents().forEach(event -> event.setEventSeries(eventSeries));
@@ -42,7 +40,6 @@ public class EventSeriesDto {
                 .name(eventSeries.getName())
                 .description(eventSeries.getDescription())
                 .category(eventSeries.getCategory())
-                .organizer(eventSeries.getOrganizer())
                 .events(eventSeries.getEvents().stream()
                         .map(EventDtoWithoutEventSeries::fromEvent)
                         .collect(Collectors.toSet()))

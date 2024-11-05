@@ -21,34 +21,35 @@ public class EventDto {
     private Long id;
     private String name;
     private String description;
+    private String shortDescription;
     private EventStatus status;
     private EventSeriesDtoWithoutEvents eventSeries;
     private LocalDateTime eventDateStart;
     private LocalDateTime eventDateEnd;
     private LocalDateTime ticketPurchaseDateStart;
     private LocalDateTime ticketPurchaseDateEnd;
-    private Location location;
+    private LocationForEventPreviewDto location;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public Event toEvent() {
-        return Event.builder()
-                .id(id)
-                .name(name)
-                .description(description)
-                .status(status)
-                .eventSeries(eventSeries != null ? eventSeries.toEventSeries() : null)
-                .eventDateStart(eventDateStart)
-                .eventDateEnd(eventDateEnd)
-                .ticketPurchaseDateStart(ticketPurchaseDateStart)
-                .ticketPurchaseDateEnd(ticketPurchaseDateEnd)
-                .location(location)
-                .createdAt(createdAt)
-                .updatedAt(updatedAt)
-                .deletedAt(deletedAt)
-                .build();
-    }
+//    public Event toEvent() {
+//        return Event.builder()
+//                .id(id)
+//                .name(name)
+//                .description(description)
+//                .status(status)
+//                .eventSeries(eventSeries != null ? eventSeries.toEventSeries() : null)
+//                .eventDateStart(eventDateStart)
+//                .eventDateEnd(eventDateEnd)
+//                .ticketPurchaseDateStart(ticketPurchaseDateStart)
+//                .ticketPurchaseDateEnd(ticketPurchaseDateEnd)
+//                .location() // ???
+//                .createdAt(createdAt)
+//                .updatedAt(updatedAt)
+//                .deletedAt(deletedAt)
+//                .build();
+//    }
 
     public static EventDto fromEvent(Event event) {
         EventSeriesDtoWithoutEvents eventSeriesDtoWithoutEvents = EventSeriesDtoWithoutEvents.fromEventSeries(event.getEventSeries());
@@ -57,22 +58,23 @@ public class EventDto {
                 .id(event.getId())
                 .name(event.getName())
                 .description(event.getDescription())
+                .shortDescription(event.getShortDescription())
                 .status(event.getStatus())
                 .eventSeries(eventSeriesDtoWithoutEvents)
                 .eventDateStart(event.getEventDateStart())
                 .eventDateEnd(event.getEventDateEnd())
                 .ticketPurchaseDateStart(event.getTicketPurchaseDateStart())
                 .ticketPurchaseDateEnd(event.getTicketPurchaseDateEnd())
-                .location(event.getLocation())
+                .location(LocationForEventPreviewDto.fromLocation(event.getLocation()))
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .deletedAt(event.getDeletedAt())
                 .build();
     }
 
-    public static Set<Event> fromEventDtoSet(Set<EventDto> eventDtoSet) {
-        return eventDtoSet.stream()
-                .map(EventDto::toEvent)
-                .collect(Collectors.toSet());
-    }
+//    public static Set<Event> fromEventDtoSet(Set<EventDto> eventDtoSet) {
+//        return eventDtoSet.stream()
+//                .map(EventDto::toEvent)
+//                .collect(Collectors.toSet());
+//    }
 }

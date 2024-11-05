@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Avatar, Menu, MenuItem, Box } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { useNavigate } from 'react-router-dom';
 
 function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
   const [anchorEl, setAnchorEl] = useState(null);
+  
+  const navigate = useNavigate();
 
   // Obsługa otwierania i zamykania menu
   const handleMenuOpen = (event) => {
@@ -17,11 +20,13 @@ function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
     <AppBar position="static" sx={{ mb: 4 }}>
       <Toolbar>
         {/* Logo aplikacji */}
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" component="div" 
+            sx={{ flexGrow: 1, cursor: 'pointer' }}
+            onClick={() => { navigate("/"); }}
+        >
           Project Antares
         </Typography>
 
-        {/* Ikonka użytkownika */}
         {isLoggedIn ? (
           <Box>
             <IconButton onClick={handleMenuOpen} color="inherit">
@@ -35,12 +40,12 @@ function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
                     onMouseLeave: handleMenuClose,
                 }}
                 anchorOrigin={{
-                    vertical: 'bottom', // Menu pojawi się pod ikoną
-                    horizontal: 'right', // Menu będzie wyrównane do prawej
+                    vertical: 'bottom',
+                    horizontal: 'right',
                 }}
                 transformOrigin={{
-                    vertical: 'top', // Ustawia transformację od góry menu
-                    horizontal: 'right', // Ustawia transformację od prawej
+                    vertical: 'top',
+                    horizontal: 'right',
                 }}
             >
                 <MenuItem onClick={() => { handleMenuClose(); onSettings(); }}>Ustawienia konta</MenuItem>
@@ -48,7 +53,10 @@ function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
             </Menu>
           </Box>
         ) : (
-          <IconButton color="inherit">
+          <IconButton color="inherit"
+            sx={{ cursor: 'pointer' }}
+            onClick={() => { navigate("/login"); }}
+          >
             <AccountCircleIcon />
           </IconButton>
         )}

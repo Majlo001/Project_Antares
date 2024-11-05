@@ -17,8 +17,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EventListPreviewDto {
     private Long id;
+    private String mainImage;
     private String name;
-    private String description;
+    private String shortDescription;
     private EventStatus status;
     private EventSeriesDtoWithoutEvents eventSeries;
     private LocalDateTime eventDateStart;
@@ -30,8 +31,9 @@ public class EventListPreviewDto {
     public static EventListPreviewDto fromEvent(Event event) {
         return EventListPreviewDto.builder()
                 .id(event.getId())
+                .mainImage(event.getMainImage())
                 .name(event.getName())
-                .description(event.getDescription())
+                .shortDescription(event.getShortDescription())
                 .status(event.getStatus())
                 .eventSeries(EventSeriesDtoWithoutEvents.fromEventSeries(event.getEventSeries()))
                 .eventDateStart(event.getEventDateStart())

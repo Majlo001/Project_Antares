@@ -1,5 +1,6 @@
 package com.majlo.antares.model.events;
 
+import com.majlo.antares.model.EventOwner;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,15 +25,19 @@ public class EventSeries {
     @ManyToOne
     private EventCategory category;
 
-    private String organizer;           // TODO: Change to User / EventOrganiser object
+    @ManyToOne
+    private EventStatus eventSeriesStatus;
+
+    @ManyToOne
+    private EventOwner eventOwner;
 
     @OneToMany(
             mappedBy = "eventSeries",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
-//    @JsonManagedReference
     private Set<Event> events;
+
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

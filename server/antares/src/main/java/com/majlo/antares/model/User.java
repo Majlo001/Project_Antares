@@ -2,19 +2,20 @@ package com.majlo.antares.model;
 
 
 import com.majlo.antares.enums.MainRole;
+import com.majlo.antares.model.events.Event;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
 @Table(name = "antares_user")
 public class User {
@@ -48,4 +49,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @NotNull
     private MainRole role;
+
+    @OneToOne(mappedBy = "eventOwner")
+    private EventOwner eventOwner;
+
+    public boolean isEventOwner() {
+        return eventOwner != null;
+    }
 }

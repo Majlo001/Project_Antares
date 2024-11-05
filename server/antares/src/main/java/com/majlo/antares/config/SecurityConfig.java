@@ -37,7 +37,9 @@ public class SecurityConfig {
                 HttpMethod.OPTIONS.name()));
         configuration.setAllowedHeaders(Arrays.asList(
                 HttpHeaders.AUTHORIZATION,
-                HttpHeaders.CONTENT_TYPE));
+                HttpHeaders.CONTENT_TYPE,
+                HttpHeaders.ACCEPT));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -55,6 +57,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests((requests) -> requests
+                    .requestMatchers("/api/images/upload").authenticated()
                     .anyRequest().permitAll()
             );
 

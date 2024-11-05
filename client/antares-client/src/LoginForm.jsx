@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
+import { Box, Tabs, Tab, TextField, Button, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onLogin, onRegister }) => {
-    const [active, setActive] = useState("login");
+    const [activeTab, setActiveTab] = useState("login");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
+
+    const navigate = useNavigate();
 
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
@@ -30,123 +34,93 @@ const LoginForm = ({ onLogin, onRegister }) => {
     const onSubmitLogin = (e) => {
         e.preventDefault();
         onLogin(e, login, password);
+        navigate("/");
     };
 
     const onSubmitRegister = (e) => {
         e.preventDefault();
         onRegister(e, firstName, lastName, login, password);
+        navigate("/");
     };
 
     return (
-        <div className="row justify-content-center">
-            <div className="col-4">
-                <ul className="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
-                    <li className="nav-item" role="presentation">
-                        <button 
-                            // className={classNames("nav-link", active === "login" ? "active" : "")} 
-                            id="tab-login"
-                            onClick={() => setActive("login")}
-                        >
-                            Login
-                        </button>
-                    </li>
-                    <li className="nav-item" role="presentation">
-                        <button 
-                            // className={classNames("nav-link", active === "register" ? "active" : "")} 
-                            id="tab-register"
-                            onClick={() => setActive("register")}
-                        >
-                            Register
-                        </button>
-                    </li>
-                </ul>
+        <Box sx={{ width: '100%', maxWidth: 400, mx: 'auto', mt: 4 }}>
+            <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                centered
+                sx={{ mb: 3 }}
+            >
+                <Tab value="login" label="Login" />
+                <Tab value="register" label="Register" />
+            </Tabs>
 
-                <div className="tab-content">
-                    <div id="pills-login">
-                        <form onSubmit={onSubmitLogin}>
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="text" 
-                                    id="loginName" 
-                                    name="login" 
-                                    className="form-control" 
-                                    value={login}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="loginName">Username</label>
-                            </div>
+            {activeTab === "login" && (
+                <Box component="form" onSubmit={onSubmitLogin} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField
+                        label="Username"
+                        variant="outlined"
+                        name="login"
+                        value={login}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Password"
+                        type="password"
+                        variant="outlined"
+                        name="password"
+                        value={password}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        Sign in
+                    </Button>
+                </Box>
+            )}
 
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="password" 
-                                    id="loginPassword" 
-                                    name="password" 
-                                    className="form-control" 
-                                    value={password}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="loginPassword">Password</label>
-                            </div>
-
-                            <button type="submit" className="btn btn-primary btn-block mb-4">Sign in</button>
-                        </form>
-                    </div>
-                    <div id="pills-register">
-                        <form onSubmit={onSubmitRegister}>
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="text" 
-                                    id="firstName" 
-                                    name="firstName" 
-                                    className="form-control" 
-                                    value={firstName}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="firstName">First name</label>
-                            </div>
-
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="text" 
-                                    id="lastName" 
-                                    name="lastName" 
-                                    className="form-control" 
-                                    value={lastName}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="lastName">Last name</label>
-                            </div>
-
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="text" 
-                                    id="login" 
-                                    name="login" 
-                                    className="form-control" 
-                                    value={login}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="login">Username</label>
-                            </div>
-
-                            <div className="form-outline mb-4">
-                                <input 
-                                    type="password" 
-                                    id="registerPassword" 
-                                    name="password" 
-                                    className="form-control" 
-                                    value={password}
-                                    onChange={onChangeHandler}
-                                />
-                                <label className="form-label" htmlFor="registerPassword">Password</label>
-                            </div>
-
-                            <button type="submit" className="btn btn-primary btn-block mb-3">Sign up</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {activeTab === "register" && (
+                <Box component="form" onSubmit={onSubmitRegister} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField
+                        label="First Name"
+                        variant="outlined"
+                        name="firstName"
+                        value={firstName}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Last Name"
+                        variant="outlined"
+                        name="lastName"
+                        value={lastName}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Username"
+                        variant="outlined"
+                        name="login"
+                        value={login}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <TextField
+                        label="Password"
+                        type="password"
+                        variant="outlined"
+                        name="password"
+                        value={password}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        Sign up
+                    </Button>
+                </Box>
+            )}
+        </Box>
     );
 };
 
