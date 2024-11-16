@@ -21,6 +21,12 @@ public class Row {
     private Long id;
     private int rowNumber;
 
+
+    /** For Positions */
+    private double positionX;
+    private double positionY;
+    private double positionRotation;
+
     @ManyToOne
     @JoinColumn(name = "sector_id")
     private Sector sector;

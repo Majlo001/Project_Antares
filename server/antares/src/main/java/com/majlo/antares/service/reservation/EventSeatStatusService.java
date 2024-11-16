@@ -1,6 +1,7 @@
 package com.majlo.antares.service.reservation;
 
 import com.majlo.antares.dtos.reservation.SeatReservationRequestDto;
+import com.majlo.antares.exceptions.SeatLimitExceededException;
 import com.majlo.antares.model.User;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.LocationVariant;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -44,9 +47,10 @@ public class EventSeatStatusService {
 
     private int countUserReservations(Long eventId, User user, String sessionId) {
         int reservationCount = 0;
+
         for (EventSeatStatus seatStatus : reservedSeats) {
-            if (seatStatus.getEvent().getId().equals(eventId) && seatStatus.getUser().getId().equals(user.getId())
-                    || seatStatus.getEvent().getId().equals(eventId) && seatStatus.getSessionId().equals(sessionId)) {
+            if (seatStatus.getEvent().getId().equals(eventId) && seatStatus.getUser().getId().equals(user.getId())) {
+//                     || seatStatus.getEvent().getId().equals(eventId) && seatStatus.getSessionId().equals(sessionId)){
                 reservationCount++;
             }
         }
@@ -102,7 +106,7 @@ public class EventSeatStatusService {
             int maxReservations = event.getMaxReservationsPerUser();
 
             if (currentReservations + seatRequests.size() > maxReservations) {
-                throw new RuntimeException("You have exceeded the maximum number of reservations for this event.");
+                throw new SeatLimitExceededException("You have exceeded the maximum number of reservations for this event.");
             }
 
             /** Check if seat is available */
@@ -130,9 +134,23 @@ public class EventSeatStatusService {
             tempReservedSeats.add(seatStatus);
             reservedSeatIds.add(seatStatus.getId());
         }
-
         reservedSeats.addAll(tempReservedSeats);
+
         return reservedSeatIds;
+    }
+
+    public void unreserveSeats(List<Long> reservedSeatIds, Long userId) {
+        for (EventSeatStatus seatStatus : reservedSeats) {
+            for (Long seatId : reservedSeatIds) {
+                if (seatStatus.getId().equals(seatId)) {
+                    if (seatStatus.getUser() != null && seatStatus.getUser().getId().equals(userId)) {
+                        seatStatus.unreserveSeat();
+                        eventSeatStatusRepository.save(seatStatus);
+                        reservedSeats.remove(seatStatus);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -146,13 +164,9 @@ public class EventSeatStatusService {
 
         for (EventSeatStatus seatStatus : reservedSeats) {
             if (seatStatus.getExpirationTime().isBefore(now) && !seatStatus.isPaid()) {
-
-                seatStatus.setUser(null);
-                seatStatus.setSessionId(null);
-                seatStatus.setReservationTime(null);
-                seatStatus.setExpirationTime(null);
-
+                seatStatus.unreserveSeat();
                 eventSeatStatusRepository.save(seatStatus);
+
                 reservedSeats.remove(seatStatus);
             }
         }
@@ -161,7 +175,6 @@ public class EventSeatStatusService {
     public void markAsPaid(Long seatStatusID) {
         reservedSeats.removeIf(seatStatus -> seatStatus.getId().equals(seatStatusID));
     }
-
 
     public void generateEventSeatStatuses(Event event) {
         LocationVariant eventLocationVariant = event.getLocationVariant();

@@ -4,10 +4,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Container } from '@mui/material';
 import LoginForm from './LoginForm';
 import AuthContent from './AuthContent';
-import EventList from './EventList';
+import MainPage from './MainPage';
 import TopBar from './TopBar';
 import EventDetail from './EventDetail';
 import CreateEventForm from './creationForms/CreateEventForm';
+import LocationSeatChart from './LocationSeatChart';
 
 const AppContent = () => {
     const [username, setUsername] = useState(null);
@@ -111,10 +112,11 @@ const AppContent = () => {
                     onSettings={null}
                 />
                 <Routes>
-                    <Route path="/" element={<EventList />} />
+                    <Route path="/" element={<MainPage />} />
                     <Route path="/login" element={<LoginForm onLogin={onLogin} onRegister={onRegister} />} />
                     <Route path="/events/:eventId" element={<EventDetail />} />
                     <Route path="/admin/form/event" element={<CreateEventForm />} />
+                    <Route path="/seat_chart/:eventId" element={<LocationSeatChart />} />
                 </Routes>
             </Container>
         </Router>

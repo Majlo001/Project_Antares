@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { request } from './helpers/axios_helper';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, Button, Box, Grid } from '@mui/material';
+import { request } from './helpers/axios_helper';
 import { serverBaseUrl } from './helpers/settings';
 import { formatDate, formatTime } from './helpers/time_format_helper';
 
@@ -44,14 +44,14 @@ const EventList = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 4 }}>
           <Typography variant="h4" component="h2" gutterBottom>
             Lista dostępnych wydarzeń
           </Typography>
     
           <Grid container spacing={2} rowSpacing={6} columnSpacing={2} marginBottom={6}>
             {events.map((event, index) => (
-                <Grid item xs={12} sm={6} md={3} key={index}>
+                <Grid item xs={12} sm={6} md={3} xl={2} key={index}>
                     <Paper 
                         elevation={3} 
                         sx={{ p: 2,

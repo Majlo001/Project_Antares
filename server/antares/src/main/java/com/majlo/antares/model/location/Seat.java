@@ -18,6 +18,12 @@ public class Seat {
     private Long id;
     private Integer seatNumber;
 
+    /** For Positions */
+    private double positionX;
+    private double positionY;
+    private double positionRotation;
+
+
     @ManyToOne
     @JoinColumn(name = "row_id")
     private Row row;
@@ -25,8 +31,5 @@ public class Seat {
 //    @OneToMany(mappedBy = "seat")
 //    private List<Reservation> reservations;
 
-    private int positionX;
-    private int positionY;
-    private int positionRotation;
     private boolean seatForDisabled;
 }

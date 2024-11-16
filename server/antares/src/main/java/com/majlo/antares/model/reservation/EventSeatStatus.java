@@ -77,4 +77,15 @@ public class EventSeatStatus {
         this.expirationTime = reservationTime.plusMinutes(reservationDurationMinutes);
         this.isSeatUnavailable = true;
     }
+
+    public void unreserveSeat() {
+        if (!this.isReserved()) {
+            throw new IllegalStateException("This seat is not reserved.");
+        }
+
+        this.user = null;
+        this.sessionId = null;
+        this.reservationTime = null;
+        this.expirationTime = null;
+    }
 }

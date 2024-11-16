@@ -1,6 +1,7 @@
 package com.majlo.antares.controller;
 
 import com.majlo.antares.model.EventOwner;
+import com.majlo.antares.model.User;
 import com.majlo.antares.repository.EventOwnerRepository;
 import com.majlo.antares.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +32,25 @@ public class AdministrationController {
         EventOwner eventOwner = EventOwner.builder()
                 .eventOwner(userRepository.findById(userId).get()).build();
 
+        eventOwner.setName("Event Company XYZ");
+        eventOwner.setImage("/api/images/files/ba37662d-86ed-4cea-a9c6-a33b7fe5fdbb.jpg");
         eventOwnerRepository.save(eventOwner);
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/edit_event_owner")
+    public ResponseEntity<?> editEventOwner(@RequestParam Long eventOwnerId) {
+        if (!eventOwnerRepository.existsById(eventOwnerId)) {
+            return ResponseEntity.badRequest().body("Event owner with id " + eventOwnerId + " does not exist");
+        }
+        EventOwner eventOwner = eventOwnerRepository.findById(eventOwnerId).get();
+        eventOwner.setName("Event Company XYZ");
+        eventOwner.setShortDescription("Event Company XYZ short description here");
+        eventOwner.setImage("/api/images/files/ba37662d-86ed-4cea-a9c6-a33b7fe5fdbb.jpg");
+        eventOwnerRepository.save(eventOwner);
+
+        return ResponseEntity.ok().build();
+    }
+
 }

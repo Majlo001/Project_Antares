@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import EventIcon  from '@mui/icons-material/Event';
 import PlaceIcon from '@mui/icons-material/Place';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import EventOwnerProfileBlock from "./blocks/EventOwnerProfileBlock";
 
-import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper } from '@mui/material';
+import { useParams, Link } from 'react-router-dom';
+import { Box, Typography, Paper, Button } from '@mui/material';
 import { request } from './helpers/axios_helper';
 import { formatDate, formatTime } from './helpers/time_format_helper';
 
@@ -27,8 +28,8 @@ const EventDetail = () => {
 
     // {formatTime(event.eventDateStart)}
     return (
-        <Box sx={{ maxWidth: 2000, mx: 'auto', mt: 4, p: 2 }}>
-            <Typography variant="h4" component="h1">
+        <Box sx={{ mx: 'auto', mt: 4, p: 2, width: '100%' }}>
+            <Typography variant="h2" component="h1">
                 {event.name}
             </Typography>
             <Typography
@@ -37,6 +38,12 @@ const EventDetail = () => {
                 sx={{ mt: 2 }}
                 dangerouslySetInnerHTML={{ __html: event.description }}
             />
+
+            <EventOwnerProfileBlock
+                imageUrl={event.eventSeries.eventOwner.image}
+                name={event.eventSeries.eventOwner.name}
+                id={event.eventSeries.eventOwner.id} />
+
             <Box sx={{ mt: 2 }}>
                 {event.eventDateStart && (
                     <>
@@ -52,8 +59,19 @@ const EventDetail = () => {
                 )}
                 <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                     <PlaceIcon sx={{ color: 'black' }} />
-                    <span style={{ marginLeft: '8px' }}>{event.location.city}</span>
+                    <span style={{ marginLeft: '8px' }}>{event.location.city}, {event.location.name}</span>
                 </Typography>
+            </Box>
+
+            <Box sx={{ mt: 4 }}>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to={`/seat_chart/${eventId}`}
+                >
+                    Check seat availability
+                </Button>
             </Box>
         </Box>
     );

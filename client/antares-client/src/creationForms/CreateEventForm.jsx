@@ -188,205 +188,205 @@ const CreateEventForm = () => {
             {loading && (
                 <CircularProgress sx={{ display: 'block', margin: '16px auto' }} />
             )}
-        <Paper elevation={3} sx={{ maxWidth: 1200, mx: 'auto', mt: 4, p: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>Create new event</Typography>
-            <Box component="form" onSubmit={handleSubmit}>
-                <TextField
-                    label="Event name"
-                    fullWidth
-                    required
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    sx={{ mb: 2 }}
-                />
-
-                <TextField
-                    label="Short Description"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    value={shortDescription}
-                    onChange={e => setShortDescription(e.target.value)}
-                    sx={{ mb: 2 }}
-                    htmlInput={{ maxLength: 200 }}
-                    helperText={`${shortDescription.length}/200`} 
-                />
-                
-                <ReactQuill
-                    value={description}
-                    onChange={setDescription}
-                    placeholder="Enter description of the event"
-                    style={{ marginBottom: '56px', height: '260px' }}
-                    modules={{
-                        toolbar: [
-                            [{ 'header': '1' }, { 'header': '2' }, { 'header': '3' }, { 'header': '4' }, { 'font': [] }],
-                            [{ 'size': [] }],
-                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            ['link', 'image'],
-                            ['clean']
-                        ],
-                    }}
-                />
-                
-                <FormControlLabel
-                    control={<Checkbox
-                                checked={isPublic}
-                                onChange={e => setIsPublic(e.target.checked)}
-                    />}
-                    label="Public event"
-                />
-
-                <Autocomplete
-                    options={eventStatusOptions}
-                    getOptionLabel={(option) => option.name || ''}
-                    value={eventStatus}
-                    onChange={(e, value) => setEventStatus(value)}
-                    renderInput={(params) => (
-                        <TextField
-                        {...params}
+            <Paper elevation={3} sx={{ maxWidth: 1200, mx: 'auto', mt: 4, p: 4 }}>
+                <Typography variant="h4" component="h1" gutterBottom>Create new event</Typography>
+                <Box component="form" onSubmit={handleSubmit}>
+                    <TextField
+                        label="Event name"
+                        fullWidth
                         required
-                        // error={!eventStatus}
-                        // helperText={!eventStatus ? 'Please select a location' : ''}
-                        label="Event status"
-                    />)}
-                    sx={{ mb: 2 }}
-                />
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        sx={{ mb: 2 }}
+                    />
 
-                <Autocomplete
-                    options={eventSeriesOptions}
-                    getOptionLabel={(option) => option.name}
-                    value={eventSeries}
-                    onChange={(e, value) => setEventSeries(value)}
-                    renderInput={(params) => <TextField {...params} label="Event series" />}
-                    sx={{ mb: 2 }}
-                />
+                    <TextField
+                        label="Short Description"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={shortDescription}
+                        onChange={e => setShortDescription(e.target.value)}
+                        sx={{ mb: 2 }}
+                        htmlInput={{ maxLength: 200 }}
+                        helperText={`${shortDescription.length}/200`} 
+                    />
+                    
+                    <ReactQuill
+                        value={description}
+                        onChange={setDescription}
+                        placeholder="Enter description of the event"
+                        style={{ marginBottom: '56px', height: '260px' }}
+                        modules={{
+                            toolbar: [
+                                [{ 'header': '1' }, { 'header': '2' }, { 'header': '3' }, { 'header': '4' }, { 'font': [] }],
+                                [{ 'size': [] }],
+                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['link', 'image'],
+                                ['clean']
+                            ],
+                        }}
+                    />
+                    
+                    <FormControlLabel
+                        control={<Checkbox
+                                    checked={isPublic}
+                                    onChange={e => setIsPublic(e.target.checked)}
+                        />}
+                        label="Public event"
+                    />
 
-                <Autocomplete
-                    required
-                    options={locationOptions}
-                    getOptionLabel={(option) => option.name || ''}
-                    value={location}
-                    inputValue={inputLocationValue}
-                    onInputChange={(e, value) => {
-                        setInputLocationValue(value);
-                    }}
-                    onChange={(e, value) => {
-                        setLocation(value);
-                        setInputLocationValue(value ? value.name : '');
-                        fetchLocationVariants(value.id);
-                        setLocationVariant(null);
-                    }}
-                    onClear={() => {
-                        setLocation(null);
-                        setInputLocationValue('');
-                        setLocationVariant(null);
-                    }}
-                    renderInput={(params) => (
-                        <TextField
-                        {...params}
+                    <Autocomplete
+                        options={eventStatusOptions}
+                        getOptionLabel={(option) => option.name || ''}
+                        value={eventStatus}
+                        onChange={(e, value) => setEventStatus(value)}
+                        renderInput={(params) => (
+                            <TextField
+                            {...params}
+                            required
+                            // error={!eventStatus}
+                            // helperText={!eventStatus ? 'Please select a location' : ''}
+                            label="Event status"
+                        />)}
+                        sx={{ mb: 2 }}
+                    />
+
+                    <Autocomplete
+                        options={eventSeriesOptions}
+                        getOptionLabel={(option) => option.name}
+                        value={eventSeries}
+                        onChange={(e, value) => setEventSeries(value)}
+                        renderInput={(params) => <TextField {...params} label="Event series" />}
+                        sx={{ mb: 2 }}
+                    />
+
+                    <Autocomplete
                         required
-                        label="Location"
-                    />)}
-                    noOptionsText="Insert to see options"
-                    sx={{ mb: 2 }}
-                />
-
-                <Autocomplete
-                    required
-                    options={locationVariantOptions}
-                    getOptionLabel={(option) => option.name || ''}
-                    value={locationVariant}
-                    onChange={(e, value) => setLocationVariant(value)}
-                    renderInput={(params) => <TextField {...params} label="Location variant" />}
-                    sx={{ mb: 2 }}
-                    disabled={!location}
-                />
-
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker 
-                        label="Event start date"
-                        value={eventDateStart}
-                        onChange={setEventDateStart}
-                        renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+                        options={locationOptions}
+                        getOptionLabel={(option) => option.name || ''}
+                        value={location}
+                        inputValue={inputLocationValue}
+                        onInputChange={(e, value) => {
+                            setInputLocationValue(value);
+                        }}
+                        onChange={(e, value) => {
+                            setLocation(value);
+                            setInputLocationValue(value ? value.name : '');
+                            fetchLocationVariants(value.id);
+                            setLocationVariant(null);
+                        }}
+                        onClear={() => {
+                            setLocation(null);
+                            setInputLocationValue('');
+                            setLocationVariant(null);
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                            {...params}
+                            required
+                            label="Location"
+                        />)}
+                        noOptionsText="Insert to see options"
+                        sx={{ mb: 2 }}
                     />
-                </LocalizationProvider>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker 
-                        label="Event end date"
-                        value={eventDateEnd}
-                        onChange={setEventDateEnd}
-                        renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+
+                    <Autocomplete
+                        required
+                        options={locationVariantOptions}
+                        getOptionLabel={(option) => option.name || ''}
+                        value={locationVariant}
+                        onChange={(e, value) => setLocationVariant(value)}
+                        renderInput={(params) => <TextField {...params} label="Location variant" />}
+                        sx={{ mb: 2 }}
+                        disabled={!location}
                     />
-                </LocalizationProvider>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker
-                        label="Ticket sales begin"
-                        value={ticketPurchaseDateStart}
-                        onChange={setTicketPurchaseDateStart}
-                        renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker 
+                            label="Event start date"
+                            value={eventDateStart}
+                            onChange={setEventDateStart}
+                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker 
+                            label="Event end date"
+                            value={eventDateEnd}
+                            onChange={setEventDateEnd}
+                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker
+                            label="Ticket sales begin"
+                            value={ticketPurchaseDateStart}
+                            onChange={setTicketPurchaseDateStart}
+                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+                        />
+                    </LocalizationProvider>
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker
+                            label="Ticket sales end"
+                            value={ticketPurchaseDateEnd}
+                            onChange={setTicketPurchaseDateEnd}
+                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+                        />
+                    </LocalizationProvider>
+
+                    <TextField
+                        label="Maximum number of bookings per user"
+                        type="number"
+                        fullWidth
+                        value={maxReservationsPerUser}
+                        onChange={e => setMaxReservationsPerUser(e.target.value)}
+                        sx={{ mb: 2 }}
                     />
-                </LocalizationProvider>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                    <DateTimePicker
-                        label="Ticket sales end"
-                        value={ticketPurchaseDateEnd}
-                        onChange={setTicketPurchaseDateEnd}
-                        renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
+
+                    <FormControlLabel
+                        control={<Checkbox checked={forceChoosingWithoutBreaks} onChange={e => setForceChoosingWithoutBreaks(e.target.checked)} />}
+                        label="Forcing the selection of seats without breaks"
                     />
-                </LocalizationProvider>
 
-                <TextField
-                    label="Maximum number of bookings per user"
-                    type="number"
-                    fullWidth
-                    value={maxReservationsPerUser}
-                    onChange={e => setMaxReservationsPerUser(e.target.value)}
-                    sx={{ mb: 2 }}
-                />
+                    <Button variant="contained" component="label" sx={{ mb: 2 }}>
+                        Add main photo
+                        <input type="file" hidden onChange={handleImageUpload} />
+                    </Button>
 
-                <FormControlLabel
-                    control={<Checkbox checked={forceChoosingWithoutBreaks} onChange={e => setForceChoosingWithoutBreaks(e.target.checked)} />}
-                    label="Forcing the selection of seats without breaks"
-                />
+                    {imagePreview && (
+                        <img
+                            src={imagePreview}
+                            alt="Image preview"
+                            style={{ maxWidth: '100%', maxHeight: '400px', marginTop: '16px' }}
+                        />
+                    )}
 
-                <Button variant="contained" component="label" sx={{ mb: 2 }}>
-                    Add main photo
-                    <input type="file" hidden onChange={handleImageUpload} />
-                </Button>
+                    <Button type="submit" variant="contained" color="primary" fullWidth>Create new event</Button>
+                </Box>
+            </Paper>
 
-                {imagePreview && (
-                    <img
-                        src={imagePreview}
-                        alt="Image preview"
-                        style={{ maxWidth: '100%', maxHeight: '400px', marginTop: '16px' }}
-                    />
-                )}
+            <Dialog open={openModal} onClose={handleCloseModal}>
+                <DialogTitle>Event Created Successfully!</DialogTitle>
+                <DialogContent>
+                    Your event has been created. Would you like to go to the event page or stay here?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseModal} color="primary">
+                        Stay on this page
+                    </Button>
+                    <Button onClick={handleNavigateToEvent} color="secondary" variant="contained">
+                        Go to Event
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
-                <Button type="submit" variant="contained" color="primary" fullWidth>Create new event</Button>
-            </Box>
-        </Paper>
-
-        <Dialog open={openModal} onClose={handleCloseModal}>
-            <DialogTitle>Event Created Successfully!</DialogTitle>
-            <DialogContent>
-                Your event has been created. Would you like to go to the event page or stay here?
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCloseModal} color="primary">
-                    Stay on this page
-                </Button>
-                <Button onClick={handleNavigateToEvent} color="secondary" variant="contained">
-                    Go to Event
-                </Button>
-            </DialogActions>
-        </Dialog>
-
-        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                {snackbarMessage}
-            </Alert>
-        </Snackbar>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };

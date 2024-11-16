@@ -1,7 +1,7 @@
 package com.majlo.antares.config;
 
 import com.majlo.antares.dtos.ErrorDto;
-import com.majlo.antares.exeptions.AppException;
+import com.majlo.antares.exceptions.AppException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;

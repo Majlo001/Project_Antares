@@ -1,6 +1,9 @@
 package com.majlo.antares.model.events;
 
+import com.majlo.antares.model.Artist;
 import com.majlo.antares.model.EventOwner;
+import com.majlo.antares.model.gallery.Gallery;
+import com.majlo.antares.model.gallery.GalleryItem;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,9 +21,14 @@ public class EventSeries {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private Boolean isSingleEvent;
+    private String shortDescription;
 
     @Lob
     private String description;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Gallery gallery;
 
     @ManyToOne
     private EventCategory category;
@@ -45,4 +53,12 @@ public class EventSeries {
             joinColumns = @JoinColumn(name = "event_series_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<EventTag> eventTags;
+
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "event_series_artists",
+            joinColumns = @JoinColumn(name = "event_series_id"),
+            inverseJoinColumns = @JoinColumn(name = "artist_id"))
+    private Set<Artist> artists;
 }

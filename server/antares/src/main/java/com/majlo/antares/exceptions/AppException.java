@@ -1,4 +1,4 @@
-package com.majlo.antares.exeptions;
+package com.majlo.antares.exceptions;
 
 import org.springframework.http.HttpStatus;
 

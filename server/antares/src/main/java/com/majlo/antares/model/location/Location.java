@@ -1,6 +1,8 @@
 package com.majlo.antares.model.location;
 
 import com.majlo.antares.model.events.Event;
+import com.majlo.antares.model.gallery.Gallery;
+import com.majlo.antares.model.gallery.GalleryItem;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,9 +24,11 @@ public class Location {
     private Long id;
     private String mainImage;
     private String name;
+
+    @ManyToOne
+    @JoinColumn(name = "city_id")
+    private City city;
     private String address;
-    private String city;
-    private String country;
     private String postalCode;
     private String phoneNumber;
     private String email;
@@ -36,8 +41,8 @@ public class Location {
     @Lob
     private String description;
 
-    @ElementCollection
-    private List<String> gallery;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Gallery gallery;
 
     @ManyToOne
     @JoinColumn(name = "location_type_id")

@@ -3,6 +3,7 @@ package com.majlo.antares.controller;
 import com.majlo.antares.config.UserAuthenticationProvider;
 import com.majlo.antares.dtos.UserDto;
 import com.majlo.antares.dtos.creation.EventCreationDto;
+import com.majlo.antares.dtos.eventDetail.EventDetailDto;
 import com.majlo.antares.dtos.events.EventDto;
 import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
 import com.majlo.antares.model.EventOwner;
@@ -16,6 +17,7 @@ import com.majlo.antares.repository.UserRepository;
 import com.majlo.antares.repository.events.EventRepository;
 import com.majlo.antares.repository.events.EventSeriesRepository;
 import com.majlo.antares.repository.location.*;
+import com.majlo.antares.service.AuthorizationService;
 import com.majlo.antares.service.reservation.EventSeatStatusService;
 import com.majlo.antares.specifications.EventResponseSpecification;
 import jakarta.transaction.Transactional;
@@ -48,8 +50,9 @@ public class EventController {
     private final UserAuthenticationProvider userAuthenticationProvider;
     private final UserRepository userRepository;
     private final EventOwnerRepository eventOwnerRepository;
+    private final AuthorizationService authorizationService;
 
-    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, UserAuthenticationProvider userAuthenticationProvider, UserRepository userRepository, EventOwnerRepository eventOwnerRepository) {
+    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, UserAuthenticationProvider userAuthenticationProvider, UserRepository userRepository, EventOwnerRepository eventOwnerRepository, AuthorizationService authorizationService) {
         this.eventSeriesRepository = eventSeriesRepository;
         this.eventRepository = eventRepository;
         this.eventSeatStatusService = eventSeatStatusService;
@@ -61,6 +64,7 @@ public class EventController {
         this.userAuthenticationProvider = userAuthenticationProvider;
         this.userRepository = userRepository;
         this.eventOwnerRepository = eventOwnerRepository;
+        this.authorizationService = authorizationService;
     }
 
 //    @GetMapping
@@ -106,11 +110,8 @@ public class EventController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody EventCreationDto eventcreationDto) {
 
-        Long userId = null;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            Authentication authentication = userAuthenticationProvider.validateToken(token);
-            userId = ((UserDto) authentication.getPrincipal()).getId();
+            Long userId = authorizationService.getAuthenticatedUserId(authHeader);
             EventOwner eventOwner = eventOwnerRepository.findById(userId).orElseThrow();
 
             if (eventOwner == null) {
@@ -130,29 +131,10 @@ public class EventController {
     }
 
     @GetMapping("/event/{id}")
-    public EventDto getEvent(@PathVariable Long id) {
+    public EventDetailDto getEvent(@PathVariable Long id) {
         return eventRepository.findById(id)
-                .map(EventDto::fromEvent)
+                .map(EventDetailDto::fromEvent)
                 .orElseThrow();
-    }
-
-
-    @PostMapping("/testCreateTickets")
-    @Transactional
-    public ResponseEntity<List<TicketType>> createTickets() {
-        TicketType normalTicket = new TicketType();
-        normalTicket.setName("Normal");
-        ticketTypeRepository.save(normalTicket);
-
-        TicketType discountedTicket = new TicketType();
-        discountedTicket.setName("Discounted");
-        ticketTypeRepository.save(discountedTicket);
-
-        List<TicketType> ticketTypes = new ArrayList<>();
-        ticketTypes.add(normalTicket);
-        ticketTypes.add(discountedTicket);
-
-        return new ResponseEntity<>(ticketTypes, HttpStatus.CREATED);
     }
 
 

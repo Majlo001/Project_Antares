@@ -22,6 +22,10 @@ public class EventOwner {
 
     private String name;
     private String image;
+    private String shortDescription;
+
+    @Lob
+    private String description;
 
     @NotNull
     @OneToOne

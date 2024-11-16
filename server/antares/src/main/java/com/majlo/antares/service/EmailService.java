@@ -38,4 +38,20 @@ public class EmailService {
 
         javaMailSender.send(message);
     }
+
+    public void sendNewsletterWelcomeEmail(String email) throws MessagingException {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                StandardCharsets.UTF_8.name());
+
+        Context context = new Context();
+        String html = templateEngine.process("newsletter-welcome-email", context);
+
+        helper.setTo(email);
+        helper.setText(html, true);
+        helper.setSubject("Welcome to Antares Newsletter!");
+        helper.setFrom("majlo.office@gmail.com");
+
+        javaMailSender.send(message);
+    }
 }

@@ -1,11 +1,14 @@
 package com.majlo.antares.model.location;
 
+import com.majlo.antares.converter.CHPointsListConverter;
 import com.majlo.antares.model.reservation.EventSeatStatus;
+//import com.majlo.antares.converter.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +24,14 @@ public class Sector {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    /** For Positions */
+    @Convert(converter = CHPointsListConverter.class)
+//    @Column(columnDefinition = "jsonb")
+    private List<CHPoints> convexHullPoints;
+    private double positionX;
+    private double positionY;
+
 
     /** For standing sectors */
     private boolean isStanding;
@@ -58,5 +69,14 @@ public class Sector {
                 .filter(eventSeatStatus -> eventSeatStatus.getSeat() == null && !eventSeatStatus.isReserved() && !eventSeatStatus.isPaid())
                 .findFirst()
                 .orElse(null);
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    @Builder
+    public static class CHPoints {
+        private double x;
+        private double y;
     }
 }
