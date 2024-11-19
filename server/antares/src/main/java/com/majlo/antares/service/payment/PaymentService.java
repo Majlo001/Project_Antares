@@ -3,21 +3,27 @@ package com.majlo.antares.service.payment;
 import com.majlo.antares.dtos.reservation.SeatReservationRequestDto;
 import com.majlo.antares.dtos.reservation.SeatReservationTicketTypeDto;
 import com.majlo.antares.model.User;
+import com.majlo.antares.model.location.TicketPrice;
 import com.majlo.antares.model.location.TicketType;
 import com.majlo.antares.model.reservation.EventSeatStatus;
 import com.majlo.antares.model.transaction.TransactionEntity;
 import com.majlo.antares.model.transaction.TransactionEntityItem;
+import com.majlo.antares.repository.location.TicketPriceRepository;
 import com.majlo.antares.repository.location.TicketTypeRepository;
 import com.majlo.antares.repository.reservation.EventSeatStatusRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityItemRepository;
 import com.majlo.antares.repository.transaction.TransactionEntityRepository;
+import com.majlo.antares.service.TicketService;
 import com.majlo.antares.service.UserService;
 import com.majlo.antares.service.reservation.EventSeatStatusService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PaymentService {
@@ -26,17 +32,21 @@ public class PaymentService {
     private final TransactionEntityItemRepository transactionEntityItemRepository;
     private final EventSeatStatusRepository eventSeatStatusRepository;
     private final TicketTypeRepository ticketTypeRepository;
+    private final TicketPriceRepository ticketPriceRepository;
 
+    private final TicketService ticketService;
     private final UserService userService;
     private final EventSeatStatusService eventSeatStatusService;
 
-    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService, EventSeatStatusService eventSeatStatusService, TicketTypeRepository ticketTypeRepository) {
+    public PaymentService(TransactionEntityRepository transactionEntityRepository, TransactionEntityItemRepository transactionEntityItemRepository, EventSeatStatusRepository eventSeatStatusRepository, UserService userService, EventSeatStatusService eventSeatStatusService, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, TicketService ticketService) {
         this.transactionEntityRepository = transactionEntityRepository;
         this.transactionEntityItemRepository = transactionEntityItemRepository;
         this.eventSeatStatusRepository = eventSeatStatusRepository;
         this.userService = userService;
         this.eventSeatStatusService = eventSeatStatusService;
         this.ticketTypeRepository = ticketTypeRepository;
+        this.ticketPriceRepository = ticketPriceRepository;
+        this.ticketService = ticketService;
     }
 
     /** Payment for multiple seats */
@@ -45,9 +55,16 @@ public class PaymentService {
             List<SeatReservationTicketTypeDto> seatReservations,
             Long userId,
             String paymentMethod,
-            String discountCode) {
+            String discountCode) throws IOException {
+
+        if (seatReservations.isEmpty()) {
+            return null;
+        }
         TransactionEntity transactionEntity = createTransaction(userId, paymentMethod);
         double totalAmount = 0.0;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
 
         for (SeatReservationTicketTypeDto reservation : seatReservations) {
             EventSeatStatus seatStatus = eventSeatStatusRepository
@@ -58,14 +75,38 @@ public class PaymentService {
                 throw new RuntimeException("Seat already paid for");
             }
 
-            TicketType ticketType = ticketTypeRepository.findById(reservation.getTicketTypeId())
-                    .orElseThrow(() -> new RuntimeException("Ticket type not found"));
+//            TicketType ticketType = ticketTypeRepository.findById(reservation.getTicketTypeId())
+//                    .orElseThrow(() -> new RuntimeException("Ticket type not found"));
+
+            TicketPrice ticketPrice = ticketPriceRepository.findById(reservation.getTicketTypeId())
+                    .orElseThrow(() -> new RuntimeException("Ticket price not found"));
 
 //            /** Update seat status */
 //            eventSeatStatusRepository.save(seatStatus);
 
             /** Create transaction item */
-            double seatPrice = seatStatus.getSeatPrice(ticketType);
+//            double seatPrice = seatStatus.getSeatPrice(ticketType);
+            double seatPrice = ticketPrice.getPrice();
+
+
+
+            String eventName = seatStatus.getEvent().getName();
+            String seatNumber = seatStatus.getSeat().getSeatNumber().toString();
+            String seatRow = seatStatus.getSeat().getRow().getRowNumber().toString();
+            String sectorName = seatStatus.getSector().getName();
+            String ticketType = ticketPrice.getTicketType().getName();
+            String price = String.valueOf(ticketPrice.getPrice());
+            String eventDate = seatStatus.getEvent().getEventDateStart().format(formatter);
+
+            String ticketPdfLink = ticketService.generateTicketPdf(
+                    eventName,
+                    seatNumber,
+                    seatRow,
+                    sectorName,
+                    ticketType,
+                    price,
+                    eventDate
+            );
 
 
             TransactionEntityItem transactionItem = TransactionEntityItem.builder()
@@ -74,7 +115,9 @@ public class PaymentService {
                     .originalPrice(seatPrice)
 //                    .finalPrice(calculateFinalPrice(seatStatus, discountCode))
                     .finalPrice(seatPrice)
+                    .ticketType(ticketPrice.getTicketType().getName())
                     .purchaseDate(LocalDateTime.now())
+                    .ticketPdfLink(ticketPdfLink)
                     .build();
 
             totalAmount += transactionItem.getFinalPrice();

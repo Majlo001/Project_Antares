@@ -108,21 +108,21 @@ public class ReservationController {
     }
 
 
-    /** Payment for reserved seats */
-    @PostMapping("/pay")
-    public ResponseEntity<?> payForSeats(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody PaymentRequestDto paymentRequest,
-            HttpSession session) {
-
-        Long userId = authorizationService.getAuthenticatedUserId(authHeader);
-
-        try {
-            TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatReservations(), userId, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
-            return ResponseEntity.ok(transactionEntity);
-        }
-        catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+//    /** Payment for reserved seats */
+//    @PostMapping("/pay")
+//    public ResponseEntity<?> payForSeats(
+//            @RequestHeader("Authorization") String authHeader,
+//            @RequestBody PaymentRequestDto paymentRequest,
+//            HttpSession session) {
+//
+//        Long userId = authorizationService.getAuthenticatedUserId(authHeader);
+//
+//        try {
+//            TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatReservations(), userId, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
+//            return ResponseEntity.ok(transactionEntity);
+//        }
+//        catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
 }

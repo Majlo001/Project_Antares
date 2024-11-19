@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Stage, Layer, Rect, Text, Group } from "react-konva";
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Badge } from '@mui/material';
+import AccessibleRoundedIcon from '@mui/icons-material/AccessibleRounded';
 import { request } from "./helpers/axios_helper";
 import { useParams } from "react-router-dom";
 import { set } from "date-fns";
+import { CartContext } from './contexts/CartContext';
 
 const LocationSeatChart = () => {
+    const { updateCart } = useContext(CartContext);
+
     const { eventId } = useParams();
     const [scale, setScale] = useState(1);
     const [position, setPosition] = useState({ x: 0, y: 500 });
@@ -25,6 +29,7 @@ const LocationSeatChart = () => {
     }, [selectedSeats, eventId]);
 
 
+
     useEffect(() => {
         request("GET", `/api/location_seat_chart/get_chart?eventId=${eventId}`).then((response) => {
             setLocationVariantId(response.data.locationVariantId);
@@ -41,11 +46,13 @@ const LocationSeatChart = () => {
         });
     }, [eventId]);
 
+
+
     useEffect(() => {
         if (!isSeatChartLoaded) return;
 
         request("GET", `/api/location_seat_chart/get_available_seats?eventId=${eventId}`).then((response) => {
-            console.log("Pobrano dostępne:", response.data);
+            // console.log("Pobrano dostępne:", response.data);
 
             const newSectors = [...sectors];
             newSectors.forEach(sector => {
@@ -69,10 +76,13 @@ const LocationSeatChart = () => {
             if (selectedSeatsMap[eventId]) {
                 setSelectedSeats(selectedSeatsMap[eventId]);
             }
+
+            updateCart(eventId, selectedSeatsMap[eventId]);
         }
         console.log("Selected seats:", selectedSeats);
         setIsSeatChartLoaded(false);
     }, [isSeatChartLoaded]);
+
 
 
     const loadSectorSeatStatus = (sectorId) => {
@@ -92,27 +102,66 @@ const LocationSeatChart = () => {
             setSectors(newSectors);
             console.log("New sectors: ", sectors);
         }).catch((error) => {
-            console.error("Błąd przy pobieraniu dostępnych:", error.response);
+            console.error("Błąd przy pobieraniu dostępnych miejsc na sektorze:", error.response);
         });
     }
+
 
 
     useEffect(() => {
         const interval = setInterval(() => {
             const selectedSeatsMap = JSON.parse(sessionStorage.getItem('selectedSeatsMap')) || {};
-            const updatedSelectedSeats = selectedSeatsMap[eventId]?.filter(seat => new Date(seat.expirationDate) > new Date()) || [];
+            const eventSeats = selectedSeatsMap[eventId] || [];
             
-            
-            if (updatedSelectedSeats.length > 0) {
-                console.log("Updated selected seats:", updatedSelectedSeats);
+            console.log("Raw eventSeats:", eventSeats);
+            const activeSeats = [];
+            const expiredSeats = [];
+
+            eventSeats.forEach(seatArray => {
+                if (seatArray[0]?.expirationDate) {
+                    const expirationTime = new Date(seatArray[0].expirationDate).getTime();
+
+                    if (isNaN(expirationTime)) {
+                        console.error("Invalid expirationDate format for seat:", seatArray);
+                    } else if (expirationTime > Date.now()) {
+                        activeSeats.push(seatArray);
+                    } else {
+                        expiredSeats.push(seatArray);
+                    }
+                } else {
+                    console.error("Missing expirationDate for seat:", seatArray);
+                }
+            });
+
+
+
+            console.log("Event seats:", eventSeats);
+            console.log("Active seats:", activeSeats);
+            console.log("Expired seats:", expiredSeats);
+    
+            if (expiredSeats.length > 0) {
+                const updatedSelectedSeats = selectedSeats.filter(
+                    (selSeat) => !expiredSeats.some(expSeat => expSeat[0]?.seatId === selSeat[0]?.seatId)
+                );
                 setSelectedSeats(updatedSelectedSeats);
+    
+                const selectedSeatsMap = JSON.parse(sessionStorage.getItem('selectedSeatsMap')) || {};
                 selectedSeatsMap[eventId] = updatedSelectedSeats;
                 sessionStorage.setItem('selectedSeatsMap', JSON.stringify(selectedSeatsMap));
-            }
-        }, 30000);
+    
 
+                updateCart(eventId, updatedSelectedSeats);
+
+                const affectedSectors = [...new Set(expiredSeats.map(seatArray => seatArray[0]?.sectorId))];
+                affectedSectors.forEach(sectorId => {
+                    loadSectorSeatStatus(sectorId);
+                });
+            }
+        }, 30000);  // 30 second interval
+    
         return () => clearInterval(interval);
-    }, [selectedSeats, eventId]);
+    }, [eventId, selectedSeats]);
+
 
 
     return (
@@ -141,7 +190,7 @@ const LocationSeatChart = () => {
                     <Typography>{seatTooltip.sectorName}</Typography>
                     <Typography>{"Seat number " + seatTooltip.seatNumber}</Typography>
                     <Typography>{"Row number " + seatTooltip.rowNumber}</Typography>
-                    {!seatTooltip.ticketPrices && seatTooltip.ticketPrices.map((ticket, ticketIndex) => (
+                    {seatTooltip.ticketPrices && seatTooltip.ticketPrices.map((ticket, ticketIndex) => (
                         <Typography key={ticketIndex}>{`${ticket.ticketType}: ${ticket.price} PLN`}</Typography>
                     ))}
                 </Box>
@@ -166,7 +215,7 @@ const LocationSeatChart = () => {
                     });
                 }}
             >
-                <Layer>
+                <Layer key={JSON.stringify(selectedSeats)}>
                     {sectors.length > 0 && sectors.map((sector, sectorIndex) => (
                         // Grupa sektora
                         <React.Fragment key={sectorIndex}>
@@ -176,14 +225,9 @@ const LocationSeatChart = () => {
                                         const seatX = sector.positionX + row.positionX + seat.positionX;
                                         const seatY = sector.positionY + row.positionY + seat.positionY;
                                         const seatRotation = (row.rotation || 0) + (seat.rotation || 0);
-            
-                                        
                                         const isSelected = selectedSeats.some((selSeat) => selSeat[0].seatId === seat.id);
-                                        // const isSelected = selectedSeats.some((selSeat) => {
-                                        //     console.log("Selected seat:", selSeat);
-                                        //     selSeat.seatId === seat.id
-                                        // });
-                                        
+
+
                                         const handleSeatClick = (seat) => {
                                             if (isSelected) {
                                                 const selectedSeatsBody = selectedSeats.find((selSeat) => selSeat[0].seatId === seat.id)[0];
@@ -193,24 +237,25 @@ const LocationSeatChart = () => {
                                                     selectedSeatsBody.seatStatusId,
                                                 ];
 
-                                                request("POST", "/api/reservation/unreserve", body, {
+                                                request("POST", "/api/reservation/unreserve", body, null, {
                                                     headers: {
                                                         'Content-Type': 'application/json'
                                                     }
                                                 }).then(() => {
                                                     setSelectedSeats(selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id));
 
-                                                    // sessionStorage.setItem('selectedSeats', JSON.stringify(selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id)));
                                                     const selectedSeatsMap = JSON.parse(sessionStorage.getItem('selectedSeatsMap')) || {};
                                                     selectedSeatsMap[eventId] = selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id);
                                                     sessionStorage.setItem('selectedSeatsMap', JSON.stringify(selectedSeatsMap));
                                                 
-                                                
+
+                                                    updateCart(eventId, selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id));
                                                     loadSectorSeatStatus(sector.id);
-                                                    
                                                 }).catch((error) => {
                                                     console.error("Błąd przy odrezerwacji:", error.response);
+                                                    loadSectorSeatStatus(sector.id);
                                                 });
+
                                             }
                                             else
                                                 if (seat.seatAvailable && maxReservationsPerUser > selectedSeats.length) {
@@ -221,20 +266,28 @@ const LocationSeatChart = () => {
                                                             sectorId: sector.id,
                                                         }
                                                     ];
+                                                    console.log("Zarezerwowano:", body);
                                                     request("POST", "/api/reservation/reserve", body).then((response) => {
-                                                        body.forEach((seat, seatId) => {
-                                                            seat.seatStatusId = response.data[seatId];
-                                                            seat.expirationDate = new Date(new Date().getTime() + 15 * 60000);
+                                                        console.log("reservation sector:", sector);
+                                                        body.forEach((seatData, seatId) => {
+                                                            seatData.seatNumber = seat.seatNumber;
+                                                            seatData.rowNumber = row.rowNumber;
+                                                            seatData.seatStatusId = response.data[seatId];
+                                                            seatData.ticketPriceId = sector.ticketPrices[0].id
+                                                            // seatData.ticketTypeId = sector.ticketPrices[0].id
+                                                            seatData.expirationDate = new Date(new Date().getTime() + 15 * 60000);
                                                         });
                                                         const updatedSelectedSeats = [...selectedSeats, body];
                                                         setSelectedSeats(updatedSelectedSeats);
+                                                        console.log("Selected seats:", updatedSelectedSeats);
                                                         
-                                                        sessionStorage.setItem('selectedSeats', JSON.stringify(updatedSelectedSeats));
+                                                        // sessionStorage.setItem('selectedSeats', JSON.stringify(updatedSelectedSeats));
                                                         const selectedSeatsMap = JSON.parse(sessionStorage.getItem('selectedSeatsMap')) || {};
                                                         selectedSeatsMap[eventId] = updatedSelectedSeats;
                                                         sessionStorage.setItem('selectedSeatsMap', JSON.stringify(selectedSeatsMap));
 
 
+                                                        updateCart(eventId, updatedSelectedSeats);
                                                         loadSectorSeatStatus(sector.id);
 
 
@@ -278,6 +331,7 @@ const LocationSeatChart = () => {
                                                 }}
                                                 onClick={() => handleSeatClick(seat)}
                                             >
+                                                
                                                 <Rect
                                                     x={seatX}
                                                     y={seatY}
@@ -288,6 +342,22 @@ const LocationSeatChart = () => {
                                                     stroke="black"
                                                     strokeWidth={1}
                                                 />
+                                                {/* {seat.seatForDisabled && (
+                                                    <div
+                                                        style={{
+                                                            position: 'absolute',
+                                                            left: seatX * scale + position.x,
+                                                            top: seatY * scale + position.y,
+                                                            transform: `rotate(${seatRotation}deg)`,
+                                                            fontSize: 10,
+                                                            color: 'yellow',
+                                                            pointerEvents: 'none',
+                                                            zIndex: 1000,
+                                                        }}
+                                                    >
+                                                        <AccessibleRoundedIcon />
+                                                    </div>
+                                                )} */}
                                                 <Text
                                                     text={isSelected ? "" : !seat.seatAvailable ? "" : seat.seatNumber}
                                                     pointerEvents="none"

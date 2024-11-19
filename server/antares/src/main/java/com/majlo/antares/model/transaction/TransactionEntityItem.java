@@ -31,7 +31,8 @@ public class TransactionEntityItem {
     // TODO: Create a separate table for ticket types eg. "Normal", "Student", "Senior"
     private String ticketType;
 
-
     private LocalDateTime purchaseDate;
+
+    private String ticketPdfLink;
 }
 

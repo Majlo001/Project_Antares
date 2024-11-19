@@ -18,45 +18,45 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-@Controller
-public class TicketController {
-    @Value("${pdf.directory}")
-    private String pdfDirectory;
-
-    @Autowired
-    private TemplateEngine templateEngine;
-
-    @GetMapping("/generate-ticket/{userName}/{eventName}/{seatNumber}/{price}/{date}")
-    public String generateTicket(
-            @PathVariable String userName,
-            @PathVariable String eventName,
-            @PathVariable String seatNumber,
-            @PathVariable String price,
-            @PathVariable String date,
-            Model model
-    ) throws IOException {
-
-        Context context = new Context();
-        context.setVariable("userName", userName);
-        context.setVariable("eventName", eventName);
-        context.setVariable("seatNumber", seatNumber);
-        context.setVariable("price", price);
-        context.setVariable("date", date);
-        String htmlContent = templateEngine.process("ticket-template", context);
-
-        String fileName = userName + "_ticket.pdf";
-        String filePath = pdfDirectory + fileName;
-        HtmlConverter.convertToPdf(htmlContent, new FileOutputStream(filePath));
-
-        //TODO: Fix: Somehow return the file to the user
-//        return new RedirectView("/tickets/" + fileName);
-        String ticketUrl = "/tickets/" + fileName;
-        return ticketUrl;
-    }
-
-    @GetMapping("/tickets/{fileName}")
-    public Resource getTicket(@PathVariable String fileName) throws IOException {
-        Path path = Paths.get(pdfDirectory + fileName);
-        return new UrlResource(path.toUri());
-    }
-}
+//@Controller
+//public class TicketController {
+//    @Value("${pdf.directory}")
+//    private String pdfDirectory;
+//
+//    @Autowired
+//    private TemplateEngine templateEngine;
+//
+//    @GetMapping("/generate-ticket/{userName}/{eventName}/{seatNumber}/{price}/{date}")
+//    public String generateTicket(
+//            @PathVariable String userName,
+//            @PathVariable String eventName,
+//            @PathVariable String seatNumber,
+//            @PathVariable String price,
+//            @PathVariable String date,
+//            Model model
+//    ) throws IOException {
+//
+//        Context context = new Context();
+//        context.setVariable("userName", userName);
+//        context.setVariable("eventName", eventName);
+//        context.setVariable("seatNumber", seatNumber);
+//        context.setVariable("price", price);
+//        context.setVariable("date", date);
+//        String htmlContent = templateEngine.process("ticket-template", context);
+//
+//        String fileName = userName + "_ticket.pdf";
+//        String filePath = pdfDirectory + fileName;
+//        HtmlConverter.convertToPdf(htmlContent, new FileOutputStream(filePath));
+//
+//        //TODO: Fix: Somehow return the file to the user
+////        return new RedirectView("/tickets/" + fileName);
+//        String ticketUrl = "/tickets/" + fileName;
+//        return ticketUrl;
+//    }
+//
+//    @GetMapping("/tickets/{fileName}")
+//    public Resource getTicket(@PathVariable String fileName) throws IOException {
+//        Path path = Paths.get(pdfDirectory + fileName);
+//        return new UrlResource(path.toUri());
+//    }
+//}

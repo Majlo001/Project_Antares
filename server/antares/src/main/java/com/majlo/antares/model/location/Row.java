@@ -19,7 +19,7 @@ public class Row {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private int rowNumber;
+    private Integer rowNumber;
 
 
     /** For Positions */

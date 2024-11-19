@@ -1,7 +1,6 @@
 package com.majlo.antares.model.events;
 
 import com.majlo.antares.model.EventOwner;
-import com.majlo.antares.model.User;
 import com.majlo.antares.model.location.Location;
 import com.majlo.antares.model.location.LocationVariant;
 import com.majlo.antares.model.reservation.EventSeatStatus;
@@ -26,6 +25,7 @@ public class Event {
     private boolean isPublic;
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String description;
     private String shortDescription;
 
