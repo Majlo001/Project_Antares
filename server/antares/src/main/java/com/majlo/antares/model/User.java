@@ -36,7 +36,7 @@ public class User {
 //    @NotEmpty(message = "Email cannot be empty")
 //    @Email(message = "Email should be valid")
 //    @NotNull
-//    private String email;
+    private String email;
 
     @NotEmpty(message = "Login cannot be empty")
     @NotNull

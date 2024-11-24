@@ -35,7 +35,7 @@ export const getDataFromToken = () => {
 axios.defaults.baseURL = 'http://localhost:8080';
 // axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-export const request = (method, url, data, params) => {
+export const request = (method, url, data, params, config = { responseType: 'json'}) => {
 
     let headers = {};
     if (getAuthToken() !== null && getAuthToken() !== "null") {
@@ -47,6 +47,7 @@ export const request = (method, url, data, params) => {
         url: url,
         headers: headers,
         data: data,
-        params: params
+        params: params,
+        ...config
     });
 };

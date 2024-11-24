@@ -39,6 +39,9 @@ public class ImageService {
 
     public byte[] getImage(String filename) throws IOException {
         Path filePath = Paths.get(uploadDir).resolve(filename);
+        if (!Files.exists(filePath)) {
+            throw new IOException("File not found: " + filename);
+        }
         return Files.readAllBytes(filePath);
     }
 }

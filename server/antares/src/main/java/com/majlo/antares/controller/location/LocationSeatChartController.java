@@ -2,11 +2,13 @@ package com.majlo.antares.controller.location;
 
 import com.majlo.antares.dtos.locationSeatChart.LocationSeatChartDto;
 import com.majlo.antares.dtos.locationSeatChartAvailability.LocationSeatChartAvailabilityDto;
+import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.LocationVariant;
 import com.majlo.antares.model.reservation.EventSeatStatus;
 import com.majlo.antares.repository.events.EventRepository;
 import com.majlo.antares.repository.location.LocationRepository;
 import com.majlo.antares.repository.location.LocationVariantRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,18 +32,26 @@ public class LocationSeatChartController {
     }
 
     @GetMapping("/get_chart")
+    @Transactional
     public ResponseEntity<?> getChart(@RequestParam Long eventId) {
         try {
             LocationVariant locationVariant = eventRepository.findById(eventId).get().getLocationVariant();
-            LocationSeatChartDto locationSeatChartDto = LocationSeatChartDto.fromLocationVariant(locationVariant, eventId);
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+            LocationSeatChartDto locationSeatChartDto = LocationSeatChartDto.fromLocationVariant(locationVariant,
+                    event.getMaxReservationsPerUser(),
+                    event.getForceChoosingWithoutBreaks());
             return ResponseEntity.ok(locationSeatChartDto);
         }
         catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Event with id " + eventId + " not found " + e.getMessage());
         }
     }
 
     @GetMapping("/get_available_seats")
+    @Transactional
     public ResponseEntity<?> getAvailableSeats(@RequestParam Long eventId) {
         try {
             List<EventSeatStatus> eventSeatStatuses = eventRepository.findById(eventId).get().getEventSeatStatuses();

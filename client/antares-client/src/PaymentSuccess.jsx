@@ -35,6 +35,7 @@ const PaymentSuccess = () => {
                 console.log('Event seats:', eventSeats);
                 return sum.concat(eventSeats.map(item => {
                     return {
+                        eventId: eventId,
                         eventSeatStatusId: item[0].seatStatusId,
                         ticketTypeId: item[0].ticketPriceId
                     };

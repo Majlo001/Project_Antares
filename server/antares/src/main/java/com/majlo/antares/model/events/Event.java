@@ -25,7 +25,7 @@ public class Event {
     private boolean isPublic;
 
     @Lob
-    @Basic(fetch = FetchType.LAZY)
+    @Basic(fetch = FetchType.EAGER)
     private String description;
     private String shortDescription;
 

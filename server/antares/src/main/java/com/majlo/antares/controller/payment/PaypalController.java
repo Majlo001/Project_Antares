@@ -1,6 +1,7 @@
 package com.majlo.antares.controller.payment;
 
 import com.majlo.antares.dtos.payment.PaymentRequestDto;
+import com.majlo.antares.model.User;
 import com.majlo.antares.model.transaction.TransactionEntity;
 import com.majlo.antares.service.AuthorizationService;
 import com.majlo.antares.service.payment.PaymentService;
@@ -76,10 +77,10 @@ public class PaypalController {
             Map<String, String> response = new HashMap<>();
 
             if ("approved".equals(payment.getState())) {
-                Long userId = authorizationService.getAuthenticatedUserId(authHeader);
+                User user = authorizationService.getAuthenticatedUser(authHeader);
 
                 try {
-                    TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatReservations(), userId, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
+                    TransactionEntity transactionEntity = paymentService.payForMultipleSeats(paymentRequest.getSeatReservations(), user, paymentRequest.getPaymentMethod(), paymentRequest.getDiscountCode());
                     response.put("status", "Payment approved");
                     return ResponseEntity.ok(response);
                 }

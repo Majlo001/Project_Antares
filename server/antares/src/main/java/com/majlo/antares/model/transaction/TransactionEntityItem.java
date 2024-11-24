@@ -1,5 +1,6 @@
 package com.majlo.antares.model.transaction;
 
+import com.majlo.antares.model.location.TicketType;
 import com.majlo.antares.model.reservation.EventSeatStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -28,11 +29,14 @@ public class TransactionEntityItem {
     private double originalPrice;
     private double finalPrice;
 
-    // TODO: Create a separate table for ticket types eg. "Normal", "Student", "Senior"
-    private String ticketType;
+    @ManyToOne
+    @JoinColumn(name = "ticket_type_id")
+    private TicketType ticketType;
 
     private LocalDateTime purchaseDate;
 
-    private String ticketPdfLink;
+    @OneToOne
+    @JoinColumn(name = "ticket_id")
+    private Ticket ticket;
 }
 

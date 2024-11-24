@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onLogin, onRegister }) => {
     const [activeTab, setActiveTab] = useState("login");
+    const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [login, setLogin] = useState("");
@@ -14,6 +15,9 @@ const LoginForm = ({ onLogin, onRegister }) => {
     const onChangeHandler = (event) => {
         const { name, value } = event.target;
         switch (name) {
+            case "email":
+                setEmail(value);
+                break;
             case "firstName":
                 setFirstName(value);
                 break;
@@ -39,7 +43,7 @@ const LoginForm = ({ onLogin, onRegister }) => {
 
     const onSubmitRegister = (e) => {
         e.preventDefault();
-        onRegister(e, firstName, lastName, login, password);
+        onRegister(e, email, firstName, lastName, login, password);
         navigate("/");
     };
 
@@ -82,6 +86,14 @@ const LoginForm = ({ onLogin, onRegister }) => {
 
             {activeTab === "register" && (
                 <Box component="form" onSubmit={onSubmitRegister} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <TextField
+                        label="Email"
+                        variant="outlined"
+                        name="email"
+                        value={email}
+                        onChange={onChangeHandler}
+                        fullWidth
+                    />
                     <TextField
                         label="First Name"
                         variant="outlined"

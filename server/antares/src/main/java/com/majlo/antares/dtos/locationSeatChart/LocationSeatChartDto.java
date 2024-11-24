@@ -2,10 +2,12 @@ package com.majlo.antares.dtos.locationSeatChart;
 
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.LocationVariant;
+import com.majlo.antares.repository.events.EventRepository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationSeatChartDto {
+
     private Long locationVariantId;
     private String locationName;
     private String locationVariantName;
@@ -21,12 +24,7 @@ public class LocationSeatChartDto {
     private Integer maxReservationsPerUser;
     private Boolean forceChoosingWithoutBreaks;
 
-    public static LocationSeatChartDto fromLocationVariant(LocationVariant locationVariant, Long eventId) {
-        Event event = locationVariant.getLocation().getEvents().stream()
-                .filter(e -> e.getId().equals(eventId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
-
+    public static LocationSeatChartDto fromLocationVariant(LocationVariant locationVariant, Integer maxReservationsPerUser, Boolean forceChoosingWithoutBreaks) {
         return LocationSeatChartDto.builder()
                 .locationVariantId(locationVariant.getId())
                 .locationName(locationVariant.getLocation().getName())
@@ -34,8 +32,8 @@ public class LocationSeatChartDto {
                 .sectors(locationVariant.getSectors().stream()
                         .map(SectorForLocationSeatChartDto::fromSector)
                         .toList())
-                .maxReservationsPerUser(event.getMaxReservationsPerUser())
-                .forceChoosingWithoutBreaks(event.getForceChoosingWithoutBreaks())
+                .maxReservationsPerUser(maxReservationsPerUser)
+                .forceChoosingWithoutBreaks(forceChoosingWithoutBreaks)
                 .build();
     }
 }

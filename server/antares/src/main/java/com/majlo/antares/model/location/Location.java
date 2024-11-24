@@ -51,6 +51,6 @@ public class Location {
     @OneToMany(mappedBy = "location")
     private List<LocationVariant> locationVariantList;
 
-    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
-    private List<LocationContactPerson> contactPersons;
+//    @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
+//    private List<LocationContactPerson> contactPersons;
 }

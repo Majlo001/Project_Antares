@@ -143,6 +143,7 @@ public class EventController {
 
     // TODO: Add JWT token, account and role validation
     @PostMapping("/generateEventSeatStatusEntities")
+    @Transactional
     public ResponseEntity<?> generateEventSeatStatusEntities(@RequestParam Long event_id) {
         try {
             Event event = eventRepository.findById(event_id).orElseThrow(() ->

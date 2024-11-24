@@ -4,7 +4,8 @@ import org.springframework.security.core.GrantedAuthority;
 
 public enum MainRole implements GrantedAuthority {
     ADMIN,
-    EVENT_MANAGER,
+    EVENT_OWNER,
+    TICKET_CONTROLLER,
     USER;
 
     @Override

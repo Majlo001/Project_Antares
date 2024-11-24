@@ -3,6 +3,7 @@ package com.majlo.antares.controller.cart;
 import com.majlo.antares.dtos.cart.CartEventDataDto;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.repository.events.EventRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ public class CartController {
     private final EventRepository eventRepository;
 
     @GetMapping("/tickets_info")
+    @Transactional
     public ResponseEntity<?> getTicketsInfo(
             @RequestParam Long eventId,
             @RequestParam List<Long> sectorIds) {

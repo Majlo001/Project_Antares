@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { request, setAuthHeader, getDataFromToken } from './helpers/axios_helper';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Container } from '@mui/material';
@@ -12,12 +13,14 @@ import CreateEventForm from './creationForms/CreateEventForm';
 import LocationSeatChart from './LocationSeatChart';
 import PaymentSuccess from './PaymentSuccess';
 import PaymentCancel from './PaymentCancel';
+import UserTickets from './UserTickets';
+import UserTransactions from './UserTransactions';
 import { CartProvider } from './contexts/CartContext';
 
 const AppContent = () => {
+
     const [username, setUsername] = useState(localStorage.getItem("username"));
     const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("auth_token") !== null);
-    const [cartItemCount, setCartItemCount] = useState(0);
 
 
     useEffect(() => {
@@ -52,13 +55,17 @@ const AppContent = () => {
         localStorage.removeItem("username");
         setUsername(null);
         setIsLoggedIn(false);
+
+        const navigate = useNavigate();
+        navigate("/");
+        window.location.reload();
     };
 
     const onLogin = (e, username, password) => {
         e.preventDefault();
         request(
             "POST",
-            "/login",
+            "/api/auth/login",
             {
                 login: username,
                 password: password
@@ -76,12 +83,13 @@ const AppContent = () => {
         });
     };
 
-    const onRegister = (e, firstName, lastName, username, password) => {
+    const onRegister = (e, email, firstName, lastName, username, password) => {
         e.preventDefault();
         request(
             "POST",
-            "/register",
+            "/api/auth/register",
             {
+                email: email,
                 firstName: firstName,
                 lastName: lastName,
                 login: username,
@@ -98,20 +106,6 @@ const AppContent = () => {
             setIsLoggedIn(false);
         });
     };
-
-    function calculateCartItems(cartData) {
-        if (!cartData) return 0;
-    
-        let totalItems = 0;
-    
-        Object.values(cartData).forEach((nestedArrays) => {
-            nestedArrays.forEach((array) => {
-                totalItems += array.length;
-            });
-        });
-    
-        return totalItems;
-    }
 
     return (
         <CartProvider>
@@ -137,18 +131,24 @@ const AppContent = () => {
                         isLoggedIn={isLoggedIn}
                         userName={username}
                         onLogout={onLogout}
-                        onSettings={null}
-                        cartItemCount={cartItemCount}
                     />
                     <Routes>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/login" element={<LoginForm onLogin={onLogin} onRegister={onRegister} />} />
                         <Route path="/events/:eventId" element={<EventDetail />} />
-                        <Route path="/admin/form/event" element={<CreateEventForm />} />
+                        <Route path="/auth/*" element={<AuthContent />} />
+                        
                         <Route path="/seat_chart/:eventId" element={<LocationSeatChart />} />
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/payment/success" element={<PaymentSuccess />} />
                         <Route path="/payment/cancel" element={<PaymentCancel />} />
+
+                        {/* <Route path="/settings" element={} /> */}
+                        <Route path="/tickets" element={<UserTickets />} />
+                        <Route path="/transaction" element={<UserTransactions />} />
+
+                        <Route path="/admin/form/event" element={<CreateEventForm />} />
+                        {/* <Route path="/admin/form/event/:eventId" element={<CreateEventForm />} */}
                     </Routes>
                 </Container>
             </Router>

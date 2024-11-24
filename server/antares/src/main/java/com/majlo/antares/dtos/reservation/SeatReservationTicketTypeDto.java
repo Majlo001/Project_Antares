@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SeatReservationTicketTypeDto {
+    private Long eventId;
     private Long eventSeatStatusId;
     private Long ticketTypeId;
 }

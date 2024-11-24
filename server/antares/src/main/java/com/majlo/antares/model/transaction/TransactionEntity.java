@@ -1,6 +1,7 @@
 package com.majlo.antares.model.transaction;
 
 import com.majlo.antares.model.User;
+import com.majlo.antares.model.events.Event;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -28,6 +29,10 @@ public class TransactionEntity {
     private double totalAmount;
 
     private LocalDateTime transactionDate;
+
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
 
 
     // TODO: Create a separate table for discounts codes

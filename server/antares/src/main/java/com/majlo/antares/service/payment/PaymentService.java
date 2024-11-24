@@ -1,11 +1,14 @@
 package com.majlo.antares.service.payment;
 
+import com.google.zxing.WriterException;
 import com.majlo.antares.dtos.reservation.SeatReservationRequestDto;
 import com.majlo.antares.dtos.reservation.SeatReservationTicketTypeDto;
 import com.majlo.antares.model.User;
+import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.TicketPrice;
 import com.majlo.antares.model.location.TicketType;
 import com.majlo.antares.model.reservation.EventSeatStatus;
+import com.majlo.antares.model.transaction.Ticket;
 import com.majlo.antares.model.transaction.TransactionEntity;
 import com.majlo.antares.model.transaction.TransactionEntityItem;
 import com.majlo.antares.repository.location.TicketPriceRepository;
@@ -53,17 +56,19 @@ public class PaymentService {
     @Transactional
     public TransactionEntity payForMultipleSeats(
             List<SeatReservationTicketTypeDto> seatReservations,
-            Long userId,
+            User user,
             String paymentMethod,
-            String discountCode) throws IOException {
+            String discountCode) throws IOException, WriterException {
 
         if (seatReservations.isEmpty()) {
             return null;
         }
-        TransactionEntity transactionEntity = createTransaction(userId, paymentMethod);
+        TransactionEntity transactionEntity = createTransaction(user.getId(), paymentMethod);
         double totalAmount = 0.0;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//        Long eventId = seatReservations
+//        Event event = eventSeatStatusRepository.findById(eventId).get().getEvent();
 
 
         for (SeatReservationTicketTypeDto reservation : seatReservations) {
@@ -97,15 +102,18 @@ public class PaymentService {
             String ticketType = ticketPrice.getTicketType().getName();
             String price = String.valueOf(ticketPrice.getPrice());
             String eventDate = seatStatus.getEvent().getEventDateStart().format(formatter);
+            Event event = seatStatus.getEvent();
 
-            String ticketPdfLink = ticketService.generateTicketPdf(
+            Ticket ticket = ticketService.generateTicketPdf(
                     eventName,
                     seatNumber,
                     seatRow,
                     sectorName,
                     ticketType,
                     price,
-                    eventDate
+                    eventDate,
+                    user,
+                    event
             );
 
 
@@ -115,9 +123,9 @@ public class PaymentService {
                     .originalPrice(seatPrice)
 //                    .finalPrice(calculateFinalPrice(seatStatus, discountCode))
                     .finalPrice(seatPrice)
-                    .ticketType(ticketPrice.getTicketType().getName())
+                    .ticketType(ticketPrice.getTicketType())
                     .purchaseDate(LocalDateTime.now())
-                    .ticketPdfLink(ticketPdfLink)
+                    .ticket(ticket)
                     .build();
 
             totalAmount += transactionItem.getFinalPrice();

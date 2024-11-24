@@ -5,7 +5,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from "./contexts/CartContext";
 
-function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
+function TopBar({ isLoggedIn, userName, onLogout }) {
     const { cartData, calculateCartItems } = useContext(CartContext);
     const [cartItemCount, setCartItemCount] = useState(0);
 
@@ -26,9 +26,17 @@ function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
         setAnchorEl(null);
     };
 
-    useEffect(() => {
-        console.log("TopBar: isLoggedIn:", isLoggedIn);
-    }, [isLoggedIn]);
+    const handleOnSettings = () => {
+        navigate("/settings");
+    };
+
+    const handleOnShowTickets = () => {
+        navigate("/tickets");
+    };
+
+    const handleOnShowTransactions = () => {
+        navigate("/transactions");
+    }
 
   return (
     <AppBar position="static" sx={{ mb: 4 }}>
@@ -71,8 +79,10 @@ function TopBar({ isLoggedIn, userName, onLogout, onSettings }) {
                     horizontal: 'right',
                 }}
             >
-                <MenuItem onClick={() => { handleMenuClose(); onSettings(); }}>Ustawienia konta</MenuItem>
-                <MenuItem onClick={() => { handleMenuClose(); onLogout(); }}>Wyloguj</MenuItem>
+                <MenuItem onClick={() => { handleMenuClose(); handleOnShowTickets(); }}>Tickets</MenuItem>
+                <MenuItem onClick={() => { handleMenuClose(); handleOnShowTransactions(); }}>Transactions</MenuItem>
+                <MenuItem onClick={() => { handleMenuClose(); handleOnSettings(); }}>Account Settings</MenuItem>
+                <MenuItem onClick={() => { handleMenuClose(); onLogout(); }}>Log Out</MenuItem>
             </Menu>
           </Box>
         ) : (
