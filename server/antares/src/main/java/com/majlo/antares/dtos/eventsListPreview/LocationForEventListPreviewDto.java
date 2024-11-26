@@ -13,13 +13,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LocationForEventListPreviewDto {
     private Long id;
-    private String mainImage;
+    private String name;
+    private String city;
     private LocationType locationType;
 
     public static LocationForEventListPreviewDto fromLocation(Location location) {
         return LocationForEventListPreviewDto.builder()
                 .id(location.getId())
-                .mainImage(location.getMainImage())
+                .name(location.getName())
+                .city(location.getCity().getCityName())
                 .locationType(location.getLocationType())
                 .build();
     }

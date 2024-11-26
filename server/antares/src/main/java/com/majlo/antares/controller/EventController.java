@@ -51,8 +51,9 @@ public class EventController {
     private final UserRepository userRepository;
     private final EventOwnerRepository eventOwnerRepository;
     private final AuthorizationService authorizationService;
+    private final CityRepository cityRepository;
 
-    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, UserAuthenticationProvider userAuthenticationProvider, UserRepository userRepository, EventOwnerRepository eventOwnerRepository, AuthorizationService authorizationService) {
+    public EventController(EventSeriesRepository eventSeriesRepository, EventRepository eventRepository, EventSeatStatusService eventSeatStatusService, LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, SectorRepository sectorRepository, TicketTypeRepository ticketTypeRepository, TicketPriceRepository ticketPriceRepository, UserAuthenticationProvider userAuthenticationProvider, UserRepository userRepository, EventOwnerRepository eventOwnerRepository, AuthorizationService authorizationService, CityRepository cityRepository) {
         this.eventSeriesRepository = eventSeriesRepository;
         this.eventRepository = eventRepository;
         this.eventSeatStatusService = eventSeatStatusService;
@@ -65,23 +66,17 @@ public class EventController {
         this.userRepository = userRepository;
         this.eventOwnerRepository = eventOwnerRepository;
         this.authorizationService = authorizationService;
+        this.cityRepository = cityRepository;
     }
-
-//    @GetMapping
-//    public List<EventDto> getAllEvents() {
-//        return eventRepository.findAll()
-//                .stream()
-//                .map(EventDto::fromEvent)
-//                .toList();
-//    }
 
 
     @GetMapping
     public EventResponseDto getEvents(
-            @RequestParam(required = false) Location location,
+            @RequestParam(required = false) String cityName,
             @RequestParam(required = false) LocalDateTime dateStart,
             @RequestParam(required = false) LocalDateTime dateEnd,
-            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String searchText,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "30") int size
     ) {
@@ -91,7 +86,34 @@ public class EventController {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Specification<Event> specification = EventResponseSpecification.filterByCriteria(location, dateStart, dateEnd, tag);
+        City city = cityRepository.findByCityName(cityName);
+
+        Specification<Event> specification = EventResponseSpecification.filterByCriteria(city, dateStart, dateEnd, category, searchText);
+        Page<Event> eventPage = eventRepository.findAll(specification, pageable);
+
+        List<EventListPreviewDto> eventDtos = eventPage.stream().map(EventListPreviewDto::fromEvent).toList();
+
+        return EventResponseDto.builder()
+                .events(eventDtos)
+                .totalPages(eventPage.getTotalPages())
+                .totalElements(eventPage.getTotalElements())
+                .pageNo(page)
+                .build();
+    }
+
+    @GetMapping("/search")
+    public EventResponseDto getEvents(
+            @RequestParam(required = false) String searchText,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "30") int size
+    ) {
+        if (page < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page number must be greater than or equal to 1");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        Specification<Event> specification = EventResponseSpecification.filterByEventName(searchText);
         Page<Event> eventPage = eventRepository.findAll(specification, pageable);
 
         List<EventListPreviewDto> eventDtos = eventPage.stream().map(EventListPreviewDto::fromEvent).toList();

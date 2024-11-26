@@ -9,6 +9,9 @@ import MainPage from './MainPage';
 import TopBar from './TopBar';
 import Cart from './Cart';
 import EventDetail from './EventDetail';
+import Events from './Events';
+import ArtistDetail from './ArtistDetail';
+import LocationDetail from './LocationDetail';
 import CreateEventForm from './creationForms/CreateEventForm';
 import LocationSeatChart from './LocationSeatChart';
 import PaymentSuccess from './PaymentSuccess';
@@ -16,6 +19,9 @@ import PaymentCancel from './PaymentCancel';
 import UserTickets from './UserTickets';
 import UserTransactions from './UserTransactions';
 import { CartProvider } from './contexts/CartContext';
+
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const AppContent = () => {
 
@@ -135,6 +141,7 @@ const AppContent = () => {
                     <Routes>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/login" element={<LoginForm onLogin={onLogin} onRegister={onRegister} />} />
+                        <Route path="/events" element={<Events />} />
                         <Route path="/events/:eventId" element={<EventDetail />} />
                         <Route path="/auth/*" element={<AuthContent />} />
                         
@@ -142,6 +149,9 @@ const AppContent = () => {
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/payment/success" element={<PaymentSuccess />} />
                         <Route path="/payment/cancel" element={<PaymentCancel />} />
+
+                        <Route path="/artists/:artistId" element={<ArtistDetail />} />
+                        <Route path="/locations/:locationId" element={<LocationDetail />} />
 
                         {/* <Route path="/settings" element={} /> */}
                         <Route path="/tickets" element={<UserTickets />} />

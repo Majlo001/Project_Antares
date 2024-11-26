@@ -1,0 +1,31 @@
+/* .rdrDateRangePickerWrapper .rdrSelectedDate {
+    background-color: #FF7F00 !important;
+    color: white;
+}
+
+.rdrDayToday .rdrDayNumber::after {
+    color: #FF7F00 !important;
+}
+
+.rdrDateRangePickerWrapper .rdrStartEdge,
+.rdrDateRangePickerWrapper .rdrInRange,
+.rdrDateRangePickerWrapper .rdrEndEdge {
+    background-color: #FF7F00 !important;
+}
+
+.rdrDateRangePickerWrapper .rdrDay:hover {
+    background-color: rgba(255, 127, 0, 0.1) !important;
+}
+
+.rdrDateRangePickerWrapper .rdrMonthAndYearPickers .rdrDateDisplayItem {
+    color: #FF7F00 !important;
+}
+
+.rdrDateRangePickerWrapper .rdrMonthPicker {
+    background-color: #FF7F00 !important;
+    color: white;
+}
+
+.rdrDateRangePickerWrapper .rdrNextPrevButton {
+    color: #FF7F00 !important;
+} */

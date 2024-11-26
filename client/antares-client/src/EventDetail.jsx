@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import EventIcon  from '@mui/icons-material/Event';
 import PlaceIcon from '@mui/icons-material/Place';
+import EventSeatRoundedIcon from '@mui/icons-material/EventSeatRounded';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
 import EventOwnerProfileBlock from "./blocks/EventOwnerProfileBlock";
+import ArtistCard from './blocks/ArtistCard';
+import LocationCard from './blocks/LocationCard';
 
 import { useParams, Link } from 'react-router-dom';
-import { Box, Typography, Paper, Button } from '@mui/material';
+import { Box, Typography, Paper, Button, Grid, Container } from '@mui/material';
 import { request } from './helpers/axios_helper';
 import { formatDate, formatTime } from './helpers/time_format_helper';
+import { useNavigate } from 'react-router-dom';
+import { serverBaseUrl } from "./helpers/settings";
+
 
 const EventDetail = () => {
     const { eventId } = useParams();
     const [event, setEvent] = useState(null);
+    
+    const navigate = useNavigate();
 
     useEffect(() => {
         request("GET", `/api/events/event/${eventId}`).then((response) => {
@@ -28,52 +37,141 @@ const EventDetail = () => {
 
     // {formatTime(event.eventDateStart)}
     return (
-        <Box sx={{ mx: 'auto', mt: 4, p: 2, width: '100%' }}>
-            <Typography variant="h2" component="h1">
-                {event.name}
-            </Typography>
-            <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ mt: 2 }}
-                dangerouslySetInnerHTML={{ __html: event.description }}
-            />
+        <Grid container spacing={2} sx={{ mt: 4 }}>
+            <Grid item xs={12} md={3}>
+                <Box sx={{ mx: 'auto', p: 2 }}>
+                    <Box
+                        component="img"
+                        sx={{
+                            width: '100%',
+                            height: 'auto',
+                            maxHeight: 400,
+                            objectFit: 'cover',
+                            mb: 2
+                        }}
+                        alt={event.name}
+                        src={serverBaseUrl + event.mainImage}
+                    />
 
-            <EventOwnerProfileBlock
-                imageUrl={event.eventSeries.eventOwner.image}
-                name={event.eventSeries.eventOwner.name}
-                id={event.eventSeries.eventOwner.id} />
-
-            <Box sx={{ mt: 2 }}>
-                {event.eventDateStart && (
-                    <>
-                        <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
-                            <EventIcon  sx={{ color: 'black' }} />
-                            <span style={{ marginLeft: '8px' }}>{formatDate(event.eventDateStart)}</span>
+                    <Box sx={{ mt: 2 }}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            component={Link}
+                            to={`/seat_chart/${eventId}`}
+                            sx={{ width: '100%', color: 'text.primary', borderColor: 'primary.main' }}
+                            startIcon={<EventSeatRoundedIcon />}
+                        >
+                            Check seat availability
+                        </Button>
+                    </Box>
+                </Box>
+            </Grid>
+            <Grid item xs={12} md={9}>
+                <Container sx={{ padding: 4 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <Typography variant="h2" component="h1">
+                            {event.name}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                            <AccessTimeIcon sx={{ color: 'black' }} />
-                            <span style={{ marginLeft: '8px' }}>{formatTime(event.eventDateStart)}</span>
-                        </Typography>
-                    </>
-                )}
-                <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <PlaceIcon sx={{ color: 'black' }} />
-                    <span style={{ marginLeft: '8px' }}>{event.location.city}, {event.location.name}</span>
-                </Typography>
-            </Box>
 
-            <Box sx={{ mt: 4 }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    component={Link}
-                    to={`/seat_chart/${eventId}`}
-                >
-                    Check seat availability
-                </Button>
-            </Box>
-        </Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1, mb: 1 }}>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                sx={{ textTransform: 'none' }}
+                            >
+                                {event.eventSeries.eventCategory.eventCategoryName}
+                            </Button>
+                        </Box>
+
+                        <Box>
+                            {event.eventDateStart && (
+                                <>
+                                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                        <EventIcon sx={{ color: 'black' }} />
+                                        <span style={{ marginLeft: '8px' }}>{formatDate(event.eventDateStart)}</span>
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                        <AccessTimeIcon sx={{ color: 'black' }} />
+                                        <span style={{ marginLeft: '8px' }}>{formatTime(event.eventDateStart)}</span>
+                                    </Typography>
+                                </>
+                            )}
+                            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                                <PlaceIcon sx={{ color: 'black' }} />
+                                <span style={{ marginLeft: '8px' }}>
+                                    {event.location.city}, {event.location.name}
+                                </span>
+                            </Typography>
+                        </Box>
+
+                        <EventOwnerProfileBlock
+                            imageUrl={event.eventSeries.eventOwner.image}
+                            name={event.eventSeries.eventOwner.name}
+                            id={event.eventSeries.eventOwner.id}
+                        />
+
+                        
+
+                        <Typography
+                            variant="body1"
+                            color="text.secondary"
+                            sx={{ mt: 2 }}
+                            dangerouslySetInnerHTML={{ __html: event.description }}
+                        />
+                    </Box>
+                </Container>
+            </Grid>
+            
+            <Grid container spacing={2} p={4}>
+                <Grid  item xs={12}>
+                    <Typography variant="h4" gutterBottom>
+                        Artists
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, margin: "32px 0" }}>
+                        {event.eventSeries.artists.map((artist) => (
+                            <ArtistCard
+                                navigate={navigate}
+                                key={artist.id}
+                                artistId={artist.id}
+                                artistName={artist.name}
+                                artistImage={artist.mainImage}
+                            />
+                        ))}
+                    </Box>
+                </Grid>
+
+                {/* Lokalizacja */}
+                <Grid item xs={12}>
+                    <Typography variant="h4" gutterBottom>
+                        Location
+                    </Typography>
+                    <LocationCard
+                        navigate={navigate}
+                        locationId={event.location.id}
+                        locationName={event.location.name}
+                        locationAddress={event.location.address}
+                        locationCity={event.location.city}
+                        locationCountry={event.location.country}
+                        locationImage={event.location.mainImage}
+                        mapLink={event.location.googleMapsLink}
+                    />
+                </Grid>
+
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {event.eventSeries.eventTags.map((tag) => (
+                        <Button
+                            key={tag.id}
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ textTransform: 'none' }}
+                        >
+                            {tag.name}
+                        </Button>
+                    ))}
+                </Box>
+            </Grid>
+        </Grid>
     );
 };
 

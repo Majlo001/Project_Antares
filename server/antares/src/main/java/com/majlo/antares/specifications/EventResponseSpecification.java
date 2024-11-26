@@ -1,33 +1,52 @@
 package com.majlo.antares.specifications;
 
 import com.majlo.antares.model.events.Event;
-import com.majlo.antares.model.location.Location;
+import com.majlo.antares.model.events.EventSeries;
+import com.majlo.antares.model.location.City;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 import jakarta.persistence.criteria.Predicate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EventResponseSpecification {
 
-    public static Specification<Event> filterByCriteria(Location location, LocalDateTime dateStart, LocalDateTime dateEnd, String tag) {
+    public static Specification<Event> filterByCriteria(City city, LocalDateTime dateStart, LocalDateTime dateEnd, String category, String searchText) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (location != null) {
-                predicates.add(criteriaBuilder.equal(root.get("location"), location));
-            }
+            if (city != null) {
+                predicates.add(criteriaBuilder.equal(root.get("location").get("city"), city));            }
 
             if (dateStart != null && dateEnd != null) {
-                predicates.add(criteriaBuilder.between(root.get("eventDateStart"), dateStart, dateEnd));
+                Expression<LocalDate> eventDateStart = criteriaBuilder.function("date", LocalDate.class, root.get("eventDateStart"));
+
+                predicates.add(criteriaBuilder.between(eventDateStart, dateStart.toLocalDate(), dateEnd.toLocalDate()));
             }
 
-            if (tag != null) {
-                predicates.add(criteriaBuilder.isMember(tag, root.get("tags")));
+            if (category != null) {
+                Join<Event, EventSeries> eventSeriesJoin = root.join("eventSeries");
+                predicates.add(criteriaBuilder.equal(eventSeriesJoin.get("category").get("eventCategoryName"), category));
+            }
+
+            if (searchText != null) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + searchText.toLowerCase() + "%"));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    public static Specification<Event> filterByEventName(String eventName) {
+        return (root, query, criteriaBuilder) -> {
+            if (eventName == null || eventName.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + eventName.toLowerCase() + "%");
         };
     }
 }

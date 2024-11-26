@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 public class EventDetailDto {
     private Long id;
     private String name;
+    private String mainImage;
     private String description;
     private String shortDescription;
     private EventStatus status;
@@ -32,6 +33,7 @@ public class EventDetailDto {
         return EventDetailDto.builder()
                 .id(event.getId())
                 .name(event.getName())
+                .mainImage(event.getMainImage())
                 .description(event.getDescription())
                 .shortDescription(event.getShortDescription())
                 .status(event.getStatus())

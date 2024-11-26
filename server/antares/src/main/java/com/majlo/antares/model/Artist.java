@@ -28,4 +28,7 @@ public class Artist {
     private Gallery gallery;
 
     private String websiteUrl;
+    private String instagramUrl;
+    private String facebookUrl;
+    private String spotifyUrl;
 }

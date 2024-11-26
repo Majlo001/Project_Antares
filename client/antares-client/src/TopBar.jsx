@@ -43,7 +43,10 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
       <Toolbar>
         <Typography variant="h6" component="div" 
             sx={{ flexGrow: 1, cursor: 'pointer' }}
-            onClick={() => { navigate("/"); }}
+            onClick={() => {
+                navigate("/");
+                // window.location.reload();
+            }}
         >
           Antares Ticket App
         </Typography>

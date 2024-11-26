@@ -23,6 +23,7 @@ public class EventSeries {
     private String name;
     private Boolean isSingleEvent;
     private String shortDescription;
+    private String youtubePreviewUrl;
 
     @Lob
     private String description;
