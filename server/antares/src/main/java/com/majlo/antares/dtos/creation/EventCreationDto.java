@@ -22,6 +22,7 @@ public class EventCreationDto {
     private Long id;
     private String name;
     private boolean isPublic;
+    private boolean isSingleEvent;
     private String description;
     private String shortDescription;
     private Long eventStatusId;

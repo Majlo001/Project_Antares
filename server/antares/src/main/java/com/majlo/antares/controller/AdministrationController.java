@@ -1,5 +1,6 @@
 package com.majlo.antares.controller;
 
+import com.majlo.antares.enums.MainRole;
 import com.majlo.antares.model.EventOwner;
 import com.majlo.antares.model.User;
 import com.majlo.antares.repository.EventOwnerRepository;
@@ -25,12 +26,16 @@ public class AdministrationController {
             return ResponseEntity.notFound().build();
         }
 
-        if (eventOwnerRepository.existsByEventOwner(userRepository.findById(userId).get())) {
+        User user = userRepository.findById(userId).get();
+        if (eventOwnerRepository.existsByEventOwner(user)) {
             return ResponseEntity.badRequest().body("User is already an event owner");
         }
 
         EventOwner eventOwner = EventOwner.builder()
-                .eventOwner(userRepository.findById(userId).get()).build();
+                .eventOwner(user).build();
+
+        user.setRole(MainRole.valueOf("EVENT_OWNER"));
+        userRepository.save(user);
 
         eventOwner.setName("Event Company XYZ");
         eventOwner.setImage("/api/images/files/ba37662d-86ed-4cea-a9c6-a33b7fe5fdbb.jpg");
@@ -39,17 +44,28 @@ public class AdministrationController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/edit_event_owner")
-    public ResponseEntity<?> editEventOwner(@RequestParam Long eventOwnerId) {
-        if (!eventOwnerRepository.existsById(eventOwnerId)) {
-            return ResponseEntity.badRequest().body("Event owner with id " + eventOwnerId + " does not exist");
+    @PostMapping("/set_ticket_controller")
+    public ResponseEntity<?> setTicketController(@RequestParam Long userId) {
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.notFound().build();
         }
-        EventOwner eventOwner = eventOwnerRepository.findById(eventOwnerId).get();
-        eventOwner.setName("Event Company XYZ");
-        eventOwner.setShortDescription("Event Company XYZ short description here");
-        eventOwner.setImage("/api/images/files/ba37662d-86ed-4cea-a9c6-a33b7fe5fdbb.jpg");
-        eventOwnerRepository.save(eventOwner);
 
+        User user = userRepository.findById(userId).get();
+        user.setRole(MainRole.valueOf("TICKET_CONTROLLER"));
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("/set_admin")
+    public ResponseEntity<?> setAdmin(@RequestParam Long userId) {
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userRepository.findById(userId).get();
+        user.setRole(MainRole.valueOf("ADMIN"));
+        userRepository.save(user);
         return ResponseEntity.ok().build();
     }
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { request, setAuthHeader, getDataFromToken } from './helpers/axios_helper';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Container } from '@mui/material';
@@ -9,9 +10,14 @@ import MainPage from './MainPage';
 import TopBar from './TopBar';
 import Cart from './Cart';
 import EventDetail from './EventDetail';
-import Events from './Events';
 import ArtistDetail from './ArtistDetail';
 import LocationDetail from './LocationDetail';
+import EventsPage from './EventsPage';
+
+import AdminPanelSidebar from './admin/AdminPanelSidebar';
+import AdminPanel from './admin/AdminPanel';
+import AdminEventsPage from './admin/AdminEventsPage';
+
 import CreateEventForm from './creationForms/CreateEventForm';
 import LocationSeatChart from './LocationSeatChart';
 import PaymentSuccess from './PaymentSuccess';
@@ -24,10 +30,8 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 const AppContent = () => {
-
     const [username, setUsername] = useState(localStorage.getItem("username"));
     const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("auth_token") !== null);
-
 
     useEffect(() => {
         const savedUsername = localStorage.getItem("username");
@@ -54,14 +58,12 @@ const AppContent = () => {
         }
     }, []);
 
-
     const onLogout = () => {
         setAuthHeader(null);
         localStorage.removeItem("auth_token");
         localStorage.removeItem("username");
         setUsername(null);
         setIsLoggedIn(false);
-
         const navigate = useNavigate();
         navigate("/");
         window.location.reload();
@@ -81,8 +83,7 @@ const AppContent = () => {
             setAuthHeader(response.data.token);
             localStorage.setItem("username", username);
             setUsername(username);
-            setIsLoggedIn(true);
-        }).catch((error) => {
+        }).catch(() => {
             setAuthHeader(null);
             setUsername(null);
             setIsLoggedIn(false);
@@ -138,10 +139,11 @@ const AppContent = () => {
                         userName={username}
                         onLogout={onLogout}
                     />
+
                     <Routes>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/login" element={<LoginForm onLogin={onLogin} onRegister={onRegister} />} />
-                        <Route path="/events" element={<Events />} />
+                        <Route path="/events" element={<EventsPage />} />
                         <Route path="/events/:eventId" element={<EventDetail />} />
                         <Route path="/auth/*" element={<AuthContent />} />
                         
@@ -156,10 +158,22 @@ const AppContent = () => {
                         {/* <Route path="/settings" element={} /> */}
                         <Route path="/tickets" element={<UserTickets />} />
                         <Route path="/transaction" element={<UserTransactions />} />
-
-                        <Route path="/admin/form/event" element={<CreateEventForm />} />
-                        {/* <Route path="/admin/form/event/:eventId" element={<CreateEventForm />} */}
+                        
                     </Routes>
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                        <AdminPanelSidebar
+                            isLoggedIn={isLoggedIn}
+                            userName={username}
+                        />
+                        <Routes>
+                            <Route path="/admin/" element={<AdminPanel />} />
+                            <Route path="/admin/events" element={<AdminEventsPage />} />
+
+                            
+                            <Route path="/admin/form/event" element={<CreateEventForm />} />
+                            <Route path="/admin/form/event/:eventId" element={<CreateEventForm />} />
+                        </Routes>
+                    </Box>
                 </Container>
             </Router>
         </CartProvider>

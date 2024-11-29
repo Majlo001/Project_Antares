@@ -27,3 +27,9 @@ export const formatTime = (dateEvent) => {
 export const formatDateTime = (dateEvent) => {
     return `${formatDate(dateEvent)} ${formatTime(dateEvent)}`;
 }
+
+export const formatDateToLocal = (date) => {
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() - offset * 60 * 1000);
+    return localDate.toISOString().split("T")[0];
+};

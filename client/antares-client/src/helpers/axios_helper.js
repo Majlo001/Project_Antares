@@ -14,6 +14,21 @@ export const setAuthHeader = (token) => {
     }
 };
 
+export const getRole = () => {
+    const token = getAuthToken();
+    if (!token) {
+        return null;
+    }
+    
+    try {
+        console.log(jwtDecode(token));
+        return jwtDecode(token).role;
+    }
+    catch (error) {
+        console.error("Błąd dekodowania tokena:", error);
+        return null;
+    }
+}
 
 export const getDataFromToken = () => {
     const token = getAuthToken();

@@ -1,18 +1,27 @@
 import { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Autocomplete, Checkbox, FormControlLabel, Paper, Snackbar, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-// import { DateTimePicker } from '@mui/x-date-pickers';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { request } from './../helpers/axios_helper';
 
+
+// import DateTimePicker from "react-datetime-picker";
+// import "react-datetime-picker/dist/DateTimePicker.css";
+// import "react-calendar/dist/Calendar.css";
+
 const CreateEventForm = () => {
+    const navigate = useNavigate();
+    const { eventId } = useParams();
+
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [shortDescription, setShortDescription] = useState('');
     const [isPublic, setIsPublic] = useState(false);
+    const [isSingleEvent, setIsSingleEvent] = useState(false);
     const [eventStatus, setEventStatus] = useState(null);
     const [eventSeries, setEventSeries] = useState(null);
     const [location, setLocation] = useState(null);
@@ -39,8 +48,6 @@ const CreateEventForm = () => {
     const [openModal, setOpenModal] = useState(false);
     const [createdEventId, setCreatedEventId] = useState(null);
 
-    const navigate = useNavigate();
-
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         const formData = new FormData();
@@ -59,49 +66,101 @@ const CreateEventForm = () => {
         });
     };
 
-    const fetchLocations = async (query) => {
+    const fetchEvent = (eventId) => {
+        request('GET', `/api/events/owner_detail/${eventId}`)
+            .then(response => {
+                const event = response.data;
+                console.log("Fetched event:", event);
+                setName(event.name);
+                setDescription(event.description);
+                setShortDescription(event.shortDescription);
+                setIsPublic(event.isPublic);
+                setIsSingleEvent(event.isSingleEvent);
+
+                // const status = { id: event.eventStatusId, name: event.eventStatusName };
+                // setEventStatus(status);
+
+                if (eventStatusOptions.length > 0) {
+                    const status = eventStatusOptions.find(status => status.id === event.eventStatusId);
+                    setEventStatus(status || null);
+                }
+                else {
+                    console.warn("No event status options available");
+                    console.log("eventStatusOptions:", eventStatusOptions);
+                }
+
+                const series = { id: event.eventSeriesId, name: event.eventSeriesName };
+                setEventSeries(series);
+
+                setInputLocationValue(event.locationName);
+                fetchLocations(event.locationName);
+                fetchLocationVariants(event.locationId);
+                console.log("locationVariantOptions:", locationVariantOptions);
+                const location = { id: event.locationId, name: event.locationName };
+                setLocation(location);
+
+                const locationVariant = { id: event.locationVariantId, name: event.locationVariantName };
+                setLocationVariant(locationVariant);
+
+                setEventDateStart(new Date(event.eventDateStart));
+                setEventDateEnd(new Date(event.eventDateEnd));
+                setTicketPurchaseDateStart(new Date(event.ticketPurchaseDateStart));
+                setTicketPurchaseDateEnd(new Date(event.ticketPurchaseDateEnd));
+                setMaxReservationsPerUser(event.maxReservationsPerUser);
+                setForceChoosingWithoutBreaks(event.forceChoosingWithoutBreaks);
+                setMainImage(event.mainImage);
+            })
+            .catch(error => {
+                console.error("Error fetching event:", error);
+                showSnackbar("Error fetching event: " + error.message, 'error');
+            });
+        
+    };
+
+    const fetchLocations = (query) => {
         if (query.length < 1) return;
 
-        try {
-            const response = await request('GET', `/api/dicts/locations?query=${query}`);
-            setLocationOptions(response.data);
-        } catch (error) {
-            console.error("Błąd podczas pobierania lokalizacji:", error);
-            showSnackbar("Błąd podczas pobierania lokalizacji: " + error.message, 'error');
-        }
+        request('GET', `/api/dicts/locations?query=${query}`)
+            .then(response => {
+                setLocationOptions(response.data);
+            })
+            .catch (error => {
+                console.error("Błąd podczas pobierania lokalizacji:", error);
+                showSnackbar("Błąd podczas pobierania lokalizacji: " + error.message, 'error');
+            });
     };
 
-    const fetchLocationVariants = async (locationId) => {
-        try {
-            const response = await request('GET', `/api/dicts/location_variants?id=${locationId}`);
-            setLocationVariantOptions(response.data);
-        }
-        catch (error) {
-            console.error("Błąd podczas pobierania wariantów lokalizacji:", error);
-            showSnackbar("Błąd podczas pobierania wariantów lokalizacji: " + error.message, 'error');
-        }
+    const fetchLocationVariants = (locationId) => {
+        request('GET', `/api/dicts/location_variants?id=${locationId}`)
+            .then(response => {
+                setLocationVariantOptions(response.data);
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania wariantów lokalizacji:", error);
+                showSnackbar("Błąd podczas pobierania wariantów lokalizacji: " + error.message, 'error');
+            });
     };
 
-    const fetchStatuses = async () => {
-        try {
-            const response = await request('GET', `/api/dicts/event_statuses`);
-            setEventStatusOptions(response.data);
-        }
-        catch (error) {
-            console.error("Błąd podczas pobierania statusu:", error);
-            showSnackbar("Błąd podczas pobierania statusu: " + error.message, 'error');
-        }
+    const fetchStatuses = () => {
+        request('GET', `/api/dicts/event_statuses`)
+            .then(response => {
+                setEventStatusOptions(response.data);
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania statusów wydarzeń:", error);
+                showSnackbar("Błąd podczas pobierania statusów wydarzeń: " + error.message, 'error');
+            });
     };
 
     const fetchEventSeries = async () => {
-        try {
-            const response = await request('GET', `/api/dicts/event_series`);
-            setEventSeriesOptions(response.data);
-        }
-        catch (error) {
-            console.error("Błąd podczas pobierania serii wydarzeń:", error);
-            showSnackbar("Błąd podczas pobierania serii wydarzeń: " + error.message, 'error');
-        }
+        request('GET', `/api/dicts/event_series`)
+            .then(response => {
+                setEventSeriesOptions(response.data);
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania serii wydarzeń:", error);
+                showSnackbar("Błąd podczas pobierania serii wydarzeń: " + error.message, 'error');
+            });
     };
 
     useEffect(() => {
@@ -115,14 +174,22 @@ const CreateEventForm = () => {
     
     useEffect(() => {
         setLoading(true);
-        try {
-            fetchStatuses();
-            fetchEventSeries();
-        }
-        finally {
+        Promise.all([fetchStatuses(), fetchEventSeries()]).then(() => {
+            if (eventId) {
+                fetchEvent(eventId);
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching initial data:", error);
+            showSnackbar("Error fetching initial data: " + error.message, 'error');
+        })
+        .finally(() => {
             setLoading(false);
+        });
+    
+        if (eventId) {
+            console.log("Edycja wydarzenia o id:", eventId);
         }
-
     }, []);
 
     const showSnackbar = (message, severity) => {
@@ -140,9 +207,11 @@ const CreateEventForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const newEvent = {
+
+        const event = {
             name,
             isPublic,
+            isSingleEvent,
             description,
             shortDescription,
             eventStatusId: eventStatus?.id,
@@ -158,17 +227,30 @@ const CreateEventForm = () => {
             mainImage
         };
 
-        request("POST", "/api/events/create", newEvent)
-            // .then(() => navigate("/events"))
-            .then((response) => {
-                console.log("Utworzono wydarzenie, response:", response)
-                setCreatedEventId(response.data.id)
-                setOpenModal(true)
-            })
-            .catch(error => {
-                console.error("Błąd przy tworzeniu wydarzenia:", error)
-                showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
-            });
+        if (eventId) {
+            request("POST", `/api/events/edit/${eventId}`, event)
+                .then((response) => {
+                    console.log("Utworzono wydarzenie, response:", response)
+                    setCreatedEventId(response.data.id)
+                    setOpenModal(true)
+                })
+                .catch(error => {
+                    console.error("Błąd przy tworzeniu wydarzenia:", error)
+                    showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
+                });
+        }
+        else {
+            request("POST", "/api/events/create", event)
+                .then((response) => {
+                    console.log("Utworzono wydarzenie, response:", response)
+                    setCreatedEventId(response.data.id)
+                    setOpenModal(true)
+                })
+                .catch(error => {
+                    console.error("Błąd przy tworzeniu wydarzenia:", error)
+                    showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
+                });
+        }
     };
 
 
@@ -188,8 +270,8 @@ const CreateEventForm = () => {
             {loading && (
                 <CircularProgress sx={{ display: 'block', margin: '16px auto' }} />
             )}
-            <Paper elevation={3} sx={{ maxWidth: 1200, mx: 'auto', mt: 4, p: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom>Create new event</Typography>
+            <Paper elevation={3} sx={{ maxWidth: 1000, mx: 'auto', mt: 4, mb:4, p: 4, width: '100%' }}>
+                <Typography variant="h4" component="h1" gutterBottom mb={4}>{eventId ? 'Edit event' : 'Create new event'} </Typography>
                 <Box component="form" onSubmit={handleSubmit}>
                     <TextField
                         label="Event name"
@@ -198,6 +280,39 @@ const CreateEventForm = () => {
                         value={name}
                         onChange={e => setName(e.target.value)}
                         sx={{ mb: 2 }}
+                    />
+
+                    <Box sx={{ mb: 2 }}>
+                        <Button variant="contained" component="label" sx={{ mb: 2 }}>
+                            Add main photo
+                            <input type="file" hidden onChange={handleImageUpload} />
+                        </Button>
+
+                        {imagePreview && (
+                            <img
+                                src={imagePreview}
+                                alt="Image preview"
+                                style={{ maxWidth: '100%', maxHeight: '400px', marginTop: '16px' }}
+                            />
+                        )}
+                    </Box>
+                    
+                    <FormControlLabel
+                        sx={{ mb: 2 }}
+                        control={<Checkbox
+                            checked={isPublic}
+                            onChange={e => setIsPublic(e.target.checked)}
+                        />}
+                        label="Public event"
+                    />
+                    
+                    <FormControlLabel
+                        sx={{ mb: 2 }}
+                        control={<Checkbox
+                            checked={isSingleEvent}
+                            onChange={e => setIsSingleEvent(e.target.checked)}
+                        />}
+                        label="Single event"
                     />
 
                     <TextField
@@ -228,28 +343,19 @@ const CreateEventForm = () => {
                             ],
                         }}
                     />
-                    
-                    <FormControlLabel
-                        control={<Checkbox
-                                    checked={isPublic}
-                                    onChange={e => setIsPublic(e.target.checked)}
-                        />}
-                        label="Public event"
-                    />
 
                     <Autocomplete
                         options={eventStatusOptions}
                         getOptionLabel={(option) => option.name || ''}
-                        value={eventStatus}
+                        value={eventStatus || null}
                         onChange={(e, value) => setEventStatus(value)}
                         renderInput={(params) => (
                             <TextField
-                            {...params}
-                            required
-                            // error={!eventStatus}
-                            // helperText={!eventStatus ? 'Please select a location' : ''}
-                            label="Event status"
-                        />)}
+                                {...params}
+                                required
+                                label="Event status"
+                                />
+                            )}
                         sx={{ mb: 2 }}
                     />
 
@@ -303,6 +409,7 @@ const CreateEventForm = () => {
                         disabled={!location}
                     />
 
+
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <DateTimePicker 
                             label="Event start date"
@@ -350,20 +457,9 @@ const CreateEventForm = () => {
                         label="Forcing the selection of seats without breaks"
                     />
 
-                    <Button variant="contained" component="label" sx={{ mb: 2 }}>
-                        Add main photo
-                        <input type="file" hidden onChange={handleImageUpload} />
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        {eventId ? 'Edit event' : 'Create new event'}
                     </Button>
-
-                    {imagePreview && (
-                        <img
-                            src={imagePreview}
-                            alt="Image preview"
-                            style={{ maxWidth: '100%', maxHeight: '400px', marginTop: '16px' }}
-                        />
-                    )}
-
-                    <Button type="submit" variant="contained" color="primary" fullWidth>Create new event</Button>
                 </Box>
             </Paper>
 

@@ -1,35 +1,138 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Box, Autocomplete, Button, TextField, FormControl, Popover, List, ListItem, ListItemText } from "@mui/material";
-import { DateRangePicker } from "react-date-range";
-import { format, startOfDay, endOfDay } from 'date-fns';
+import { DateRangePicker, createStaticRanges, defaultStaticRanges } from "react-date-range";
+import { format, startOfDay, endOfDay, addDays, isSameDay, addMonths, differenceInCalendarDays } from 'date-fns';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 import './../styles/react-date-range-custom.css';
 import { request } from "../helpers/axios_helper";
-import { Link } from "react-router-dom"
+import { Link, useNavigate  } from "react-router-dom"
   
-const EventSearchBar = () => {
+const EventSearchBar = ({ searchParams }) => {
+    const navigate = useNavigate();
+    const [searchText, setSearchText] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
     const [selectedLocation, setSelectedLocation] = useState("");
-    const [dateRange, setDateRange] = useState({
-        startDate: new Date(),
-        endDate: new Date(),
-        key: "selection",
-    });
+    // const [dateRange, setDateRange] = useState({
+    //     startDate: new Date(),
+    //     endDate: new Date(),
+    //     key: "selection",
+    // });
+    const [dateRange, setDateRange] = useState(null);
+
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [locations, setLocations] = useState([]);
-
-    const [searchText, setSearchText] = useState("");
-    const [categories, setCategories] = useState([]);
-    const [filteredEvents, setFilteredEvents] = useState([]);
     const [openPopover2, setOpenPopover2] = useState(false);
+    const [filteredEvents, setFilteredEvents] = useState([]);
+    const [categories, setCategories] = useState([]);
     const textFieldRef = useRef(null);
+
+    const customStaticRanges = createStaticRanges([
+        {
+            label: 'Today',
+            range: () => ({
+                startDate: startOfDay(new Date()),
+                endDate: endOfDay(new Date()),
+            }),
+        },
+        {
+            label: 'Tomorrow',
+            range: () => ({
+                startDate: startOfDay(addDays(new Date(), 1)),
+                endDate: endOfDay(addDays(new Date(), 1)),
+            }),
+        },
+        {
+            label: 'Next Week (Mon-Sun)',
+            range: () => {
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const startOfNextWeek = addDays(now, 8 - dayOfWeek);
+                const endOfNextWeek = addDays(startOfNextWeek, 6);
+                return {
+                    startDate: startOfDay(startOfNextWeek),
+                    endDate: endOfDay(endOfNextWeek),
+                };
+            },
+        },
+        {
+            label: 'Next Month',
+            range: () => {
+                const now = new Date();
+                const startOfNextMonth = startOfDay(addMonths(new Date(now.getFullYear(), now.getMonth() + 1, 1), 0));
+                const endOfNextMonth = endOfDay(addMonths(new Date(now.getFullYear(), now.getMonth() + 2, 0), 0));
+                return {
+                    startDate: startOfNextMonth,
+                    endDate: endOfNextMonth,
+                };
+            },
+        },
+        {
+            label: 'Next 30 Days',
+            range: () => ({
+                startDate: new Date(),
+                endDate: addDays(new Date(), 30),
+            }),
+        },
+        {
+            label: 'Next 90 Days',
+            range: () => ({
+                startDate: new Date(),
+                endDate: addDays(new Date(), 90),
+            }),
+        },
+    ]);
+
+    const customInputRanges = [
+        {
+            label: 'days starting today',
+            range: (value) => ({
+                startDate: new Date(),
+                endDate: addDays(new Date(), Math.max(Number(value), 1) - 1),
+            }),
+            getCurrentValue(range) {
+                if (!isSameDay(range.startDate, startOfDay(new Date()))) return '-';
+                if (!range.endDate) return '∞';
+                return differenceInCalendarDays(range.endDate, startOfDay(new Date())) + 1;
+            },
+        },
+    ];
+
 
     useEffect(() => {
         fetchCategories();
         fetchLocations();
+
+        if (searchParams !== undefined) {
+            const filters = Object.fromEntries(searchParams.entries());
+            console.log(filters.category, filters.cityName);
+
+            setSearchText(filters.searchText || "");
+            setSelectedCategory(filters.category && filters.category !== "null" ? filters.category : "");
+            setSelectedLocation(filters.cityName && filters.cityName !== "null" ? filters.cityName : "");
+            setDateRange(
+                filters.dateStart && filters.dateEnd
+                    ? {
+                        startDate: new Date(filters.dateStart),
+                        endDate: new Date(filters.dateEnd),
+                        key: "selection"
+                    }
+                    : null
+            );
+        }
     }, []);
+
+    const handleDateClick = (event) => {
+        if (!dateRange) {
+            setDateRange({
+                startDate: new Date(),
+                endDate: new Date(),
+                key: "selection",
+            });
+        }
+        setAnchorEl(event.currentTarget);
+    };
 
     const fetchLocations = () => {
         request("GET", "/api/dicts/location_cities")
@@ -88,35 +191,36 @@ const EventSearchBar = () => {
       setSelectedLocation(newValue);
     };
   
-    const handleDateChange = (ranges) => {
-      setDateRange(ranges.selection);
-    };
 
     const handleSearch = () => {
-        const formattedStartDate = format(startOfDay(dateRange.startDate), "yyyy-MM-dd'T'HH:mm:ss");
-        const formattedEndDate = format(endOfDay(dateRange.endDate), "yyyy-MM-dd'T'HH:mm:ss");
+        const newSearchParams = new URLSearchParams({});
 
-        console.log("Search:", formattedStartDate, formattedEndDate);
+        if (searchText) {
+            newSearchParams.set("searchText", searchText);
+        }
+        if (selectedCategory) {
+            newSearchParams.set("category", selectedCategory);
+        }
+        if (selectedLocation) {
+            newSearchParams.set("cityName", selectedLocation);
+        }
 
+        console.log("dateRange", dateRange);
+        if (dateRange) {
+            newSearchParams.set("dateStart", format(startOfDay(dateRange.startDate), "yyyy-MM-dd'T'HH:mm:ss"));
+            newSearchParams.set("dateEnd", format(endOfDay(dateRange.endDate), "yyyy-MM-dd'T'HH:mm:ss"));
+        }
 
-        request("GET", `/api/events?category=${selectedCategory}&cityName=${selectedLocation}&dateStart=${formattedStartDate}&dateEnd=${formattedEndDate}&searchText=${searchText}&page=1&size=10`)
-            .then((response) => {
-                console.log("Pobrano eventy:", response.data);
-            })
-            .catch((error) => {
-                console.error("Błąd podczas pobierania eventów:", error);
-            });
+        window.location.href = `/events?${newSearchParams.toString()}`;
 
-            
-        // const searchParams = new URLSearchParams({
-        //     category: selectedCategory,
-        //     cityName: selectedLocation,
-        //     dateStart: formattedStartDate,
-        //     dateEnd: formattedEndDate,
-        //     searchText: searchText
-        // });
-
-        // window.location.href = `/events?${searchParams.toString()}`;
+        
+        // request("GET", `/api/events?category=${selectedCategory}&cityName=${selectedLocation}&dateStart=${formattedStartDate}&dateEnd=${formattedEndDate}&searchText=${searchText}&page=1&size=10`)
+        //     .then((response) => {
+        //         console.log("Pobrano eventy:", response.data);
+        //     })
+        //     .catch((error) => {
+        //         console.error("Błąd podczas pobierania eventów:", error);
+        //     });
     };
 
     const handlePopoverClose = () => {
@@ -202,8 +306,12 @@ const EventSearchBar = () => {
             label="Date Range"
             fullWidth
             variant="outlined"
-            value={`${format(dateRange.startDate, "MM/dd/yyyy")} - ${format(dateRange.endDate, "MM/dd/yyyy")}`}
-            onClick={(event) => setAnchorEl(event.currentTarget)}
+            value={
+                dateRange
+                    ? `${format(dateRange.startDate, "dd.MM.yyyy")} - ${format(dateRange.endDate, "dd.MM.yyyy")}`
+                    : ""
+            }
+            onClick={(event) => handleDateClick(event)}
             readOnly
             style={{ flex: 1, marginRight: "10px" }}
           />
@@ -250,18 +358,25 @@ const EventSearchBar = () => {
         >
           <div style={{ padding: "10px" }}>
             <DateRangePicker
-              ranges={[dateRange]}
-              onChange={handleDateChange}
-              showSelectionPreview={true}
-              moveRangeOnFirstSelection={false}
-              months={2}
-              horizontal={true}
-              minDate={new Date()}
+              ranges={[dateRange || {
+                startDate: new Date(),
+                endDate: new Date(),
+                key: "selection",
+            }]}
+                onChange={(ranges) => setDateRange(ranges.selection)}
+                showSelectionPreview={true}
+                moveRangeOnFirstSelection={false}
+                months={2}
+                horizontal={true}
+                direction="horizontal"
+                minDate={new Date()}
+                staticRanges={customStaticRanges}
+                inputRanges={customInputRanges}
             />
           </div>
         </Popover>
       </div>
     );
-  };
+};
   
-  export default EventSearchBar;
+export default EventSearchBar;

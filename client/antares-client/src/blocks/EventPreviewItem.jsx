@@ -21,6 +21,7 @@ const EventPreviewItem = ({ event }) => {
                 display: "flex",
                 marginBottom: "20px",
                 alignItems: "center",
+                // backgroundColor: "#f4f4f4",
                 transition: "box-shadow 0.3s ease-in-out",
                 cursor: "pointer"
             }}
