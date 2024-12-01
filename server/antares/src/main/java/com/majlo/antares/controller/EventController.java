@@ -6,6 +6,7 @@ import com.majlo.antares.dtos.admin.EventOwnerDetailDto;
 import com.majlo.antares.dtos.admin.EventOwnerPreviewDto;
 import com.majlo.antares.dtos.admin.EventOwnerPreviewResponseDto;
 import com.majlo.antares.dtos.creation.EventCreationDto;
+import com.majlo.antares.dtos.eventDashboard.EventDashboardDto;
 import com.majlo.antares.dtos.eventDetail.EventDetailDto;
 import com.majlo.antares.dtos.events.EventDto;
 import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
@@ -159,9 +160,9 @@ public class EventController {
             Event event = eventcreationDto.toEvent();
             event.setCreatedAt(LocalDateTime.now());
             event.setEventOwner(eventOwner);
-            Event createdEvent = eventRepository.save(event);
+            eventRepository.save(event);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(EventDto.fromEvent(createdEvent));
+            return ResponseEntity.status(HttpStatus.CREATED).body("Event created successfully");
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid");
@@ -183,11 +184,29 @@ public class EventController {
             }
 
             Event event = eventRepository.findById(eventId).orElseThrow();
+//            EventSeries eventSeries = eventSeriesRepository.findById(eventcreationDto.getEventSeriesId()).orElseThrow();
 
             if (eventOwner.getEvents().contains(event)) {
-                event = eventcreationDto.toEvent();
                 event.setUpdatedAt(LocalDateTime.now());
-                Event createdEvent = eventRepository.save(event);
+                event.setName(eventcreationDto.getName());
+                event.setPublic(eventcreationDto.isPublic());
+                event.setDescription(eventcreationDto.getDescription());
+                event.setShortDescription(eventcreationDto.getShortDescription());
+                event.setStatus(eventStatusRepository.findById(eventcreationDto.getEventStatusId()).orElseThrow());
+//                event.setEventSeries(eventSeries);
+                event.setLocation(locationRepository.findById(eventcreationDto.getLocationId()).orElseThrow());
+                event.setLocationVariant(locationVariantRepository.findById(eventcreationDto.getLocationVariantId()).orElseThrow());
+                event.setEventDateStart(eventcreationDto.getEventDateStart());
+                event.setEventDateEnd(eventcreationDto.getEventDateEnd());
+                event.setTicketPurchaseDateStart(eventcreationDto.getTicketPurchaseDateStart());
+                event.setTicketPurchaseDateEnd(eventcreationDto.getTicketPurchaseDateEnd());
+                event.setMaxReservationsPerUser(eventcreationDto.getMaxReservationsPerUser());
+                event.setForceChoosingWithoutBreaks(eventcreationDto.getForceChoosingWithoutBreaks());
+                event.setMainImage(eventcreationDto.getMainImage());
+
+//                eventSeries.setIsSingleEvent(eventcreationDto.isSingleEvent());
+
+                eventRepository.save(event);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body("Event updated successfully");
             }
@@ -206,6 +225,7 @@ public class EventController {
     }
 
     @GetMapping("/owner_detail/{id}")
+    @Transactional
     public EventOwnerDetailDto getEventDetailOwner(@PathVariable Long id) {
         return eventRepository.findById(id)
                 .map(EventOwnerDetailDto::fromEvent)
@@ -263,6 +283,17 @@ public class EventController {
     }
 
 
+    @GetMapping("/event_dashboard/{eventId}")
+    @Transactional
+    public ResponseEntity<?> getEventDashboard(@PathVariable Long eventId) {
+        Event event = eventRepository.findById(eventId).orElseThrow();
+
+        if (event == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found");
+        }
+
+        return ResponseEntity.ok(EventDashboardDto.fromEvent(event));
+    }
 
 
 

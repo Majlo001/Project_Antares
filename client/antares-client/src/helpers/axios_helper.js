@@ -21,7 +21,6 @@ export const getRole = () => {
     }
     
     try {
-        console.log(jwtDecode(token));
         return jwtDecode(token).role;
     }
     catch (error) {

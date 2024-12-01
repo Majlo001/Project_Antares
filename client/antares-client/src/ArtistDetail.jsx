@@ -39,6 +39,7 @@ const ArtistDetail = () => {
                         sx={{
                             width: '100%',
                             height: 'auto',
+                            aspectRatio: '1/1',
                             marginBottom: 2
                         }}
                     />

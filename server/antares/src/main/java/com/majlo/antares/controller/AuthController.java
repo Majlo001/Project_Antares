@@ -4,14 +4,14 @@ import com.majlo.antares.config.UserAuthenticationProvider;
 import com.majlo.antares.dtos.CredentialsDto;
 import com.majlo.antares.dtos.SignUpDto;
 import com.majlo.antares.dtos.UserDto;
+import com.majlo.antares.model.User;
+import com.majlo.antares.service.AuthorizationService;
 import com.majlo.antares.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -22,6 +22,7 @@ public class AuthController {
 
     private final UserService userService;
     private final UserAuthenticationProvider userAuthenticationProvider;
+    private final AuthorizationService authorizationService;
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody @Valid CredentialsDto credentialsDto) {
@@ -36,6 +37,17 @@ public class AuthController {
         UserDto createdUser = userService.register(user);
         createdUser.setToken(userAuthenticationProvider.createToken(createdUser));
         return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
+    }
+
+    @GetMapping("/role")
+    public ResponseEntity<String> getRole(@RequestHeader("Authorization") String authHeader) {
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            User user = authorizationService.getAuthenticatedUser(authHeader);
+
+            return ResponseEntity.ok(user.getRole().toString());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not logged in");
     }
 
 }

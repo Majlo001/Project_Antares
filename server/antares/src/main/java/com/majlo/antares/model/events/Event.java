@@ -71,4 +71,8 @@ public class Event {
     private LocalDateTime updatedAt;
     private LocalDateTime archivedAt;
     private LocalDateTime deletedAt;    // TODO: Implement soft delete
+
+    public Boolean isEventSeatStatusesCreated() {
+        return eventSeatStatuses != null && !eventSeatStatuses.isEmpty();
+    }
 }

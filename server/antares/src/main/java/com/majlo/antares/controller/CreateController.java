@@ -173,6 +173,9 @@ public class CreateController {
         artist1.setMainImage("/api/images/files/9f2e7251-897a-411d-ad88-01da01505f69.jpg");
         artist1.setDescription("Metallica is an American heavy metal band. The band was formed in 1981 in Los Angeles by vocalist/guitarist James Hetfield and drummer Lars Ulrich, and has been based in San Francisco for most of its career. The band's fast tempos, instrumentals and aggressive musicianship made them one of the founding 'big four' bands of thrash metal, alongside Megadeth, Anthrax and Slayer. Metallica's current lineup comprises founding members and primary songwriters Hetfield and Ulrich, longtime lead guitarist Kirk Hammett, and bassist Robert Trujillo. Guitarist Dave Mustaine (who formed Megadeth) and bassists Ron McGovney, Cliff Burton and Jason Newsted are former members of the band.");
         artist1.setWebsiteUrl("https://www.metallica.com/");
+        artist1.setFacebookUrl("https://www.facebook.com/Metallica");
+        artist1.setInstagramUrl("https://www.instagram.com/metallica/");
+        artist1.setSpotifyUrl("https://open.spotify.com/artist/2ye2Wgw4gimLv2eAKyk1NB");
         artistRepostiory.save(artist1);
 
         Artist artist2 = new Artist();
@@ -180,6 +183,9 @@ public class CreateController {
         artist2.setMainImage("/api/images/files/ebd00d6d-3346-4125-b641-267990d572f5.jpg");
         artist2.setDescription("Arctic Monkeys are an English rock band formed in Sheffield in 2002. The group consists of Alex Turner (lead vocals, guitar, keyboards), Jamie Cook (guitar, keyboards), Nick O'Malley (bass guitar, backing vocals), and Matt Helders (drums, backing vocals). Former band member Andy Nicholson (bass guitar, backing vocals) left the band in 2006 shortly after their debut album was released.");
         artist2.setWebsiteUrl("https://www.arcticmonkeys.com/");
+        artist2.setFacebookUrl("https://www.facebook.com/ArcticMonkeys");
+        artist2.setInstagramUrl("https://www.instagram.com/arcticmonkeys/");
+        artist2.setSpotifyUrl("https://open.spotify.com/artist/7Ln80lUS6He07XvHI8qqHH");
         artistRepostiory.save(artist2);
 
         Artist artist3 = new Artist();
@@ -187,6 +193,9 @@ public class CreateController {
         artist3.setMainImage("/api/images/files/79e6ec4c-df40-457e-bcc4-b6c21de8bdec.jpg");
         artist3.setDescription("AC/DC are an Australian rock band formed in Sydney in 1973 by Scottish-born brothers Malcolm and Angus Young. Although their music has been variously described as hard rock, blues rock, and heavy metal, the band themselves call it simply 'rock and roll'. AC/DC underwent several line-up changes before releasing their first album, High Voltage, in 1975.");
         artist3.setWebsiteUrl("https://www.acdc.com/");
+        artist3.setFacebookUrl("https://www.facebook.com/acdc");
+        artist3.setInstagramUrl("https://www.instagram.com/acdc/");
+        artist3.setSpotifyUrl("https://open.spotify.com/artist/711MCceyCBcFnzjGY4Q7Un");
         artistRepostiory.save(artist3);
     }
 
@@ -214,7 +223,7 @@ public class CreateController {
         List<Sector> sectors = new ArrayList<>();
 
 
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 5; i++) {
             Sector sector = new Sector();
             sector.setName("Sector " + i);
             sector.setStanding(false);
@@ -372,7 +381,7 @@ public class CreateController {
 
             Set<Artist> artists = Set.of(artistRepostiory.findById(1L).get());
             eventSeries.setArtists(artists);
-            eventSeries.setIsSingleEvent(false);
+            eventSeries.setIsSingleEvent(true);
             eventSeriesRepository.save(eventSeries);
 
 

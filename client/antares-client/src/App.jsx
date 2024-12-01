@@ -17,6 +17,7 @@ import EventsPage from './EventsPage';
 import AdminPanelSidebar from './admin/AdminPanelSidebar';
 import AdminPanel from './admin/AdminPanel';
 import AdminEventsPage from './admin/AdminEventsPage';
+import AdminEventDashboard from './admin/AdminEventDashboard';
 
 import CreateEventForm from './creationForms/CreateEventForm';
 import LocationSeatChart from './LocationSeatChart';
@@ -80,6 +81,7 @@ const AppContent = () => {
             }
         ).then((response) => {
             console.log("Zalogowano:", response.data);
+            setIsLoggedIn(true);
             setAuthHeader(response.data.token);
             localStorage.setItem("username", username);
             setUsername(username);
@@ -111,6 +113,29 @@ const AppContent = () => {
             setAuthHeader(null);
             setUsername(null);
             setIsLoggedIn(false);
+        });
+    };
+
+    const fetchRole = () => {
+        return request("GET", "/api/auth/role", null, null)
+            .then((response) => {
+                return response.data;
+            })
+            .catch((error) => {
+                console.error("Error fetching role:", error);
+                return null;
+            });
+    };
+
+    const getRoleEVENT_OWNER = () => {
+        return fetchRole().then((role) => {
+            return role === "EVENT_OWNER" || role === "ADMIN";
+        });
+    };
+
+    const getRoleTICKET_CONTROLLER = () => {
+        return fetchRole().then((role) => {
+            return role === "TICKET_CONTROLLER" || role === "ADMIN";
         });
     };
 
@@ -167,6 +192,7 @@ const AppContent = () => {
                         />
                         <Routes>
                             <Route path="/admin/" element={<AdminPanel />} />
+                            <Route path="/admin/event/:eventId" element={<AdminEventDashboard />} />
                             <Route path="/admin/events" element={<AdminEventsPage />} />
 
                             

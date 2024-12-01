@@ -1,5 +1,6 @@
 package com.majlo.antares.dtos.dicts;
 
+import com.majlo.antares.model.Artist;
 import com.majlo.antares.model.events.EventCategory;
 import com.majlo.antares.model.events.EventSeries;
 import com.majlo.antares.model.events.EventStatus;
@@ -7,6 +8,7 @@ import com.majlo.antares.model.events.EventTag;
 import com.majlo.antares.model.location.City;
 import com.majlo.antares.model.location.Location;
 import com.majlo.antares.model.location.LocationVariant;
+import com.majlo.antares.model.location.TicketType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -68,6 +70,20 @@ public class DictDto {
         return DictDto.builder()
                 .id(locationVariant.getId())
                 .name(locationVariant.getName())
+                .build();
+    }
+
+    public static DictDto fromArtist(Artist artist) {
+        return DictDto.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .build();
+    }
+
+    public static DictDto fromTicketType(TicketType ticketType) {
+        return DictDto.builder()
+                .id(ticketType.getId())
+                .name(ticketType.getName())
                 .build();
     }
 }

@@ -111,7 +111,19 @@ const EventDetail = () => {
                             id={event.eventSeries.eventOwner.id}
                         />
 
-                        
+                        {event.eventSeries.youtubePreviewUrl && (
+                            <Box sx={{ mt: 2 }}>
+                                <iframe
+                                    width="100%"
+                                    height="400"
+                                    src={`https://www.youtube.com/embed/${event.eventSeries.youtubePreviewUrl.split('v=')[1]}`}
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </Box>
+                        )}
 
                         <Typography
                             variant="body1"
@@ -163,7 +175,7 @@ const EventDetail = () => {
                         <Button
                             key={tag.id}
                             variant="outlined"
-                            color="secondary"
+                            color="primary"
                             sx={{ textTransform: 'none' }}
                         >
                             {tag.name}

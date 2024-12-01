@@ -21,13 +21,10 @@ public class EventOwnerDetailDto {
     private String description;
     private String shortDescription;
     private Long eventStatusId;
-    private String eventStatusName;
     private Long eventSeriesId;
-    private String eventSeriesName;
     private Long locationId;
     private String locationName;
     private Long locationVariantId;
-    private String locationVariantName;
     private LocalDateTime eventDateStart;
     private LocalDateTime eventDateEnd;
     private LocalDateTime ticketPurchaseDateStart;
@@ -35,8 +32,12 @@ public class EventOwnerDetailDto {
     private Integer maxReservationsPerUser;
     private Boolean forceChoosingWithoutBreaks;
     private String mainImage;
+    private Boolean isEventSeatStatusesCreated;
+    private EventSeriesForEventOwnerDetailDto eventSeries;
 
     public static EventOwnerDetailDto fromEvent(Event event) {
+
+
         return EventOwnerDetailDto.builder()
                 .id(event.getId())
                 .name(event.getName())
@@ -45,13 +46,10 @@ public class EventOwnerDetailDto {
                 .description(event.getDescription())
                 .shortDescription(event.getShortDescription())
                 .eventStatusId(event.getStatus().getId())
-                .eventStatusName(event.getStatus().getEventStatusName())
                 .eventSeriesId(event.getEventSeries().getId())
-                .eventSeriesName(event.getEventSeries().getName())
                 .locationId(event.getLocation().getId())
                 .locationName(event.getLocation().getName())
                 .locationVariantId(event.getLocationVariant().getId())
-                .locationVariantName(event.getLocationVariant().getName())
                 .eventDateStart(event.getEventDateStart())
                 .eventDateEnd(event.getEventDateEnd())
                 .ticketPurchaseDateStart(event.getTicketPurchaseDateStart())
@@ -59,6 +57,8 @@ public class EventOwnerDetailDto {
                 .maxReservationsPerUser(event.getMaxReservationsPerUser())
                 .forceChoosingWithoutBreaks(event.getForceChoosingWithoutBreaks())
                 .mainImage(event.getMainImage())
+                .isEventSeatStatusesCreated(event.isEventSeatStatusesCreated())
+                .eventSeries(EventSeriesForEventOwnerDetailDto.fromEventSeries(event.getEventSeries()))
                 .build();
     }
 }

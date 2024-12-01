@@ -16,6 +16,10 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
     
 
     useEffect(() => {
+        console.log("isLoggedIn", isLoggedIn);
+    }, [isLoggedIn]);
+
+    useEffect(() => {
         const count = calculateCartItems();
         // console.log("TopBar: count:", count);
         // console.log("getRole():", getRole());`

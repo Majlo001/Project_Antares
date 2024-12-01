@@ -4,19 +4,16 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.majlo.antares.config.UserAuthenticationProvider;
 import com.majlo.antares.dtos.UserDto;
 import com.majlo.antares.dtos.dicts.*;
+import com.majlo.antares.model.Artist;
 import com.majlo.antares.model.events.EventCategory;
 import com.majlo.antares.model.events.EventStatus;
 import com.majlo.antares.model.events.EventTag;
-import com.majlo.antares.model.location.City;
-import com.majlo.antares.model.location.Location;
-import com.majlo.antares.model.location.LocationVariant;
-import com.majlo.antares.repository.events.EventCategoryRepository;
-import com.majlo.antares.repository.events.EventSeriesRepository;
-import com.majlo.antares.repository.events.EventStatusRepository;
-import com.majlo.antares.repository.events.EventTagRepository;
+import com.majlo.antares.model.location.*;
+import com.majlo.antares.repository.events.*;
 import com.majlo.antares.repository.location.CityRepository;
 import com.majlo.antares.repository.location.LocationRepository;
 import com.majlo.antares.repository.location.LocationVariantRepository;
+import com.majlo.antares.repository.location.TicketTypeRepository;
 import com.majlo.antares.service.AuthorizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +37,10 @@ public class DictsController {
     private final CityRepository cityRepository;
     private final EventCategoryRepository eventCategoryRepository;
     private final EventTagRepository eventTagRepository;
+    private final ArtistRepostiory artistRepostiory;
+    private final TicketTypeRepository ticketTypeRepository;
 
-    public DictsController(LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, EventStatusRepository eventStatusRepository, EventSeriesRepository eventSeriesRepository, UserAuthenticationProvider userAuthenticationProvider, AuthorizationService authorizationService, CityRepository cityRepository, EventCategoryRepository eventCategoryRepository, EventTagRepository eventTagRepository) {
+    public DictsController(LocationRepository locationRepository, LocationVariantRepository locationVariantRepository, EventStatusRepository eventStatusRepository, EventSeriesRepository eventSeriesRepository, UserAuthenticationProvider userAuthenticationProvider, AuthorizationService authorizationService, CityRepository cityRepository, EventCategoryRepository eventCategoryRepository, EventTagRepository eventTagRepository, ArtistRepostiory artistRepostiory, TicketTypeRepository ticketTypeRepository) {
         this.locationRepository = locationRepository;
         this.locationVariantRepository = locationVariantRepository;
         this.eventStatusRepository = eventStatusRepository;
@@ -51,6 +50,8 @@ public class DictsController {
         this.cityRepository = cityRepository;
         this.eventCategoryRepository = eventCategoryRepository;
         this.eventTagRepository = eventTagRepository;
+        this.artistRepostiory = artistRepostiory;
+        this.ticketTypeRepository = ticketTypeRepository;
     }
 
 
@@ -125,6 +126,32 @@ public class DictsController {
         return eventTags.stream()
                 .filter(eventTag -> eventTag.getTagName().toLowerCase().contains(query.toLowerCase()))
                 .map(DictDto::fromEventTag)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/event_artists")
+    public List<DictDto> getEventArtists(@RequestParam String query) {
+        List<Artist> artists = artistRepostiory.findAll();
+
+        return artists.stream()
+                .filter(artist -> artist.getName().toLowerCase().contains(query.toLowerCase()))
+                .map(DictDto::fromArtist)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/event_artists/{artistId}")
+    public DictDto getEventArtistsId(@PathVariable Long artistId) {
+        Artist artist = artistRepostiory.findById(artistId).get();
+
+        return DictDto.fromArtist(artist);
+    }
+
+    @GetMapping("/ticket_types")
+    public List<DictDto> getTicketTypes() {
+        List<TicketType> ticketTypes = ticketTypeRepository.findAll();
+
+        return ticketTypes.stream()
+                .map(DictDto::fromTicketType)
                 .collect(Collectors.toList());
     }
 }

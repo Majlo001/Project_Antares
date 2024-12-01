@@ -1,5 +1,6 @@
 package com.majlo.antares.dtos.eventDetail;
 
+import com.majlo.antares.dtos.dicts.DictDto;
 import com.majlo.antares.model.events.EventCategory;
 import com.majlo.antares.model.events.EventSeries;
 import com.majlo.antares.model.events.EventStatus;
@@ -23,11 +24,12 @@ public class EventSeriesForEventDetailsDto {
     private Boolean isSingleEvent;
     private String shortDescription;
     private String description;
+    private String youtubePreviewUrl;
     private Gallery gallery;
     private EventCategory eventCategory;
     private EventStatus eventSeriesStatus;
     private EventOwnerForEventDetailDto eventOwner;
-    private Set<EventTag> eventTags;
+    private Set<DictDto> eventTags;
     private Set<ArtistForEventDetailDto> artists;
 
     public static EventSeriesForEventDetailsDto fromEventSeries(EventSeries eventSeries) {
@@ -37,11 +39,12 @@ public class EventSeriesForEventDetailsDto {
                 .isSingleEvent(eventSeries.getIsSingleEvent())
                 .shortDescription(eventSeries.getShortDescription())
                 .description(eventSeries.getDescription())
+                .youtubePreviewUrl(eventSeries.getYoutubePreviewUrl())
                 .gallery(eventSeries.getGallery())
                 .eventCategory(eventSeries.getCategory())
                 .eventSeriesStatus(eventSeries.getEventSeriesStatus())
                 .eventOwner(EventOwnerForEventDetailDto.fromEventOwner(eventSeries.getEventOwner()))
-                .eventTags(eventSeries.getEventTags())
+                .eventTags(eventSeries.getEventTags().stream().map(DictDto::fromEventTag).collect(Collectors.toSet()))
                 .artists(eventSeries.getArtists().stream().map(ArtistForEventDetailDto::fromArtist).collect(Collectors.toSet()))
                 .build();
     }

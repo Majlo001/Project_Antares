@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Box, Drawer, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { request } from '../helpers/axios_helper';
 
-const AdminPanelSidebar = ( isLoggedIn, userName ) => {
+const AdminPanelSidebar = ({ isLoggedIn, userName }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const drawerWidth = 240;
 
-
-    // useEffect(() => {
-    //     console.log("AdminPanelSidebar: ", isLoggedIn, userName);
-    // }, [isLoggedIn, userName]);
 
     return (
         <>
@@ -53,7 +50,7 @@ const AdminPanelSidebar = ( isLoggedIn, userName ) => {
                     </ListItem>
                 </List>
                 <Box sx={{ p: 2 }}>
-                    {/* <Typography>{userName}</Typography> */}
+                    <Typography>{userName}</Typography>
                 </Box>
             </Drawer>
         )}

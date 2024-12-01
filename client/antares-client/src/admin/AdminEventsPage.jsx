@@ -26,6 +26,7 @@ import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import UnpublishedRoundedIcon from "@mui/icons-material/UnpublishedRounded";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import LaunchIcon from "@mui/icons-material/Launch";
 import AddIcon from "@mui/icons-material/Add";
 
@@ -181,24 +182,26 @@ const AdminEventsPage = () => {
         navigate(`/admin/form/event/${id}`);
     };
 
+    const handleDashboard = (id) => {
+        navigate(`/admin/event/${id}`);
+    }
+
   return (
     <Container sx={{ maxWidth: '1400px', width: '100%', mx: 'auto', mt: 4, mb:4, p: 4 }}>
       <Typography variant="h4" gutterBottom>
         Event Management
       </Typography>
-      {/* Add Event Button */}
       <Button
         variant="contained"
         color="primary"
         startIcon={<AddIcon />}
         style={{ marginBottom: "16px" }}
-        onClick={() => console.log("Navigate to create event page")}
+        onClick={() => navigate("/admin/form/event")}
       >
         Add New Event
       </Button>
 
       <Grid container spacing={2} mb={4}>
-        {/* Row 1 */}
         <Grid item xs={12} sm={4}>
           <TextField
             fullWidth
@@ -347,6 +350,9 @@ const AdminEventsPage = () => {
                     )}
                 </TableCell>
                 <TableCell>
+                  <IconButton onClick={() => handleDashboard(event.eventId)}>
+                    <DashboardIcon />
+                  </IconButton>
                   <IconButton onClick={() => handleEdit(event.eventId)}>
                     <EditIcon />
                   </IconButton>

@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Box, TextField, Button, Typography, Autocomplete, Checkbox, FormControlLabel, Paper, Snackbar, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { request } from './../helpers/axios_helper';
+import { getFullDateFormArray } from './../helpers/time_format_helper';
+import { serverBaseUrl } from './../helpers/settings';
+
+import TagsInput from './../blocks/TagsInput';
+import ArtistsInput from './../blocks/ArtistsInput';
+// import { is } from 'date-fns/locale';
+// import { set } from 'date-fns';
 
 
-// import DateTimePicker from "react-datetime-picker";
-// import "react-datetime-picker/dist/DateTimePicker.css";
-// import "react-calendar/dist/Calendar.css";
 
 const CreateEventForm = () => {
     const navigate = useNavigate();
@@ -39,7 +43,21 @@ const CreateEventForm = () => {
     const [eventSeriesOptions, setEventSeriesOptions] = useState([]);
     const [imagePreview, setImagePreview] = useState(null);
     const [inputLocationValue, setInputLocationValue] = useState('');
+    const [isEventSeatStatusesCreated, setIsEventSeatStatusesCreated] = useState(false);
 
+
+    
+    const artistsInputRef = useRef();
+    const tagsInputRef = useRef();
+    const [eventCategoriesOptions, setEventCategoriesOptions] = useState([]);
+    const [eventSeriesCategory, setEventSeriesCategory] = useState(null);
+    const [eventSeriesId, setEventSeriesId] = useState(null);
+    const [youtubePreviewUrl, setYoutubePreviewUrl] = useState('');
+
+    const [eventTags, setEventTags] = useState([]);
+    const [artistsIds, setArtistsIds] = useState([]);
+    const [eventSeriesDescription, setEventSeriesDescription] = useState('');
+    const [eventSeriesShortDescription, setEventSeriesShortDescription] = useState('');
     const [loading, setLoading] = useState(false); 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -66,7 +84,40 @@ const CreateEventForm = () => {
         });
     };
 
-    const fetchEvent = (eventId) => {
+    const fetchSingleEventSeries = (eventSeriesId, categories) => {
+        request('GET', `/api/eventseries/single_event_series/${eventSeriesId}`)
+            .then(response => {
+                const eventSeries = response.data;
+                console.log("eventSeries.eventCategory", eventSeries.eventCategoryId);
+
+                setEventSeriesDescription(eventSeries.description || "");
+                setEventSeriesShortDescription(eventSeries.shortDescription || "");
+                setYoutubePreviewUrl(eventSeries.youtubePreviewUrl || "");
+                setEventTags(eventSeries.eventTags || []);
+                setArtistsIds(eventSeries.artistsIds || []);
+
+                const category = categories.find(category => category.id === eventSeries.eventCategoryId);
+                setEventSeriesCategory(category|| null);
+
+                
+                if (artistsInputRef.current) {
+                    artistsInputRef.current.addArtists(eventSeries.artistsIds);
+                }
+
+                console.log("eventSeries.eventTags", eventSeries.eventTags);
+                if (tagsInputRef.current) {
+                    tagsInputRef.current.addTags(eventSeries.eventTags);
+                }
+
+            })
+            .catch(error => {
+                console.error("Error fetching single event series:", error);
+                showSnackbar("Error fetching single event series: " + error.message, 'error');
+            });
+
+    }
+
+    const fetchEvent = (eventId, statuses, serieses, categories) => {
         request('GET', `/api/events/owner_detail/${eventId}`)
             .then(response => {
                 const event = response.data;
@@ -75,40 +126,62 @@ const CreateEventForm = () => {
                 setDescription(event.description);
                 setShortDescription(event.shortDescription);
                 setIsPublic(event.isPublic);
-                setIsSingleEvent(event.isSingleEvent);
+                setIsSingleEvent(event.singleEvent);
 
-                // const status = { id: event.eventStatusId, name: event.eventStatusName };
-                // setEventStatus(status);
-
-                if (eventStatusOptions.length > 0) {
-                    const status = eventStatusOptions.find(status => status.id === event.eventStatusId);
+                if (statuses.length > 0) {
+                    const status = statuses.find(status => status.id === event.eventStatusId);
                     setEventStatus(status || null);
                 }
                 else {
                     console.warn("No event status options available");
-                    console.log("eventStatusOptions:", eventStatusOptions);
                 }
 
-                const series = { id: event.eventSeriesId, name: event.eventSeriesName };
-                setEventSeries(series);
+                if (serieses.length > 0) {
+                    const series = serieses.find(series => series.id === event.eventStatusId);
+                    setEventSeries(series || null);
+                }
+                else {
+                    console.warn("No event status options available");
+                }
+                
+                Promise.all([fetchLocations(event.locationName)])
+                .then(([location]) => {
+                    if (location.length > 0) {
+                        const loc = location.find(location => location.id === event.locationId);
+                        setInputLocationValue(loc?.name || '');
+                        setLocation(loc || null);
+                    }
+                })
 
-                setInputLocationValue(event.locationName);
-                fetchLocations(event.locationName);
-                fetchLocationVariants(event.locationId);
-                console.log("locationVariantOptions:", locationVariantOptions);
-                const location = { id: event.locationId, name: event.locationName };
-                setLocation(location);
+                Promise.all([fetchLocationVariants(event.locationId)])
+                .then(([locationVariant]) => {
+                    if (locationVariant.length > 0) {
+                        const variant = locationVariant.find(variant => variant.id === event.locationVariantId);
+                        setLocationVariant(variant || null);
+                    }
+                })
 
-                const locationVariant = { id: event.locationVariantId, name: event.locationVariantName };
-                setLocationVariant(locationVariant);
+                if (event.eventDateStart)
+                    setEventDateStart(getFullDateFormArray(event.eventDateStart) || null);
+                if (event.eventDateEnd)
+                    setEventDateEnd(getFullDateFormArray(event.eventDateEnd) || null);
+                if (event.ticketPurchaseDateStart)
+                    setTicketPurchaseDateStart(getFullDateFormArray(event.ticketPurchaseDateStart) || null);
+                if (event.ticketPurchaseDateEnd)
+                    setTicketPurchaseDateEnd(getFullDateFormArray(event.ticketPurchaseDateEnd) || null);
+                
+                setMaxReservationsPerUser(event.maxReservationsPerUser || null);
+                setForceChoosingWithoutBreaks(event.forceChoosingWithoutBreaks || null);
+                setMainImage(event.mainImage || null);
+                if (event.mainImage)
+                    setImagePreview(serverBaseUrl + event.mainImage);
 
-                setEventDateStart(new Date(event.eventDateStart));
-                setEventDateEnd(new Date(event.eventDateEnd));
-                setTicketPurchaseDateStart(new Date(event.ticketPurchaseDateStart));
-                setTicketPurchaseDateEnd(new Date(event.ticketPurchaseDateEnd));
-                setMaxReservationsPerUser(event.maxReservationsPerUser);
-                setForceChoosingWithoutBreaks(event.forceChoosingWithoutBreaks);
-                setMainImage(event.mainImage);
+                setIsEventSeatStatusesCreated(event.isEventSeatStatusesCreated || false);
+
+                if (event.singleEvent) {
+                    fetchSingleEventSeries(event.eventSeriesId, categories);
+                }
+
             })
             .catch(error => {
                 console.error("Error fetching event:", error);
@@ -120,48 +193,69 @@ const CreateEventForm = () => {
     const fetchLocations = (query) => {
         if (query.length < 1) return;
 
-        request('GET', `/api/dicts/locations?query=${query}`)
+        return request('GET', `/api/dicts/locations?query=${query}`)
             .then(response => {
                 setLocationOptions(response.data);
+                return response.data;
             })
             .catch (error => {
                 console.error("Błąd podczas pobierania lokalizacji:", error);
                 showSnackbar("Błąd podczas pobierania lokalizacji: " + error.message, 'error');
+                throw error;
             });
     };
 
     const fetchLocationVariants = (locationId) => {
-        request('GET', `/api/dicts/location_variants?id=${locationId}`)
+        return request('GET', `/api/dicts/location_variants?id=${locationId}`)
             .then(response => {
                 setLocationVariantOptions(response.data);
+                return response.data;
             })
             .catch(error => {
                 console.error("Błąd podczas pobierania wariantów lokalizacji:", error);
                 showSnackbar("Błąd podczas pobierania wariantów lokalizacji: " + error.message, 'error');
+                throw error;
             });
     };
 
     const fetchStatuses = () => {
-        request('GET', `/api/dicts/event_statuses`)
+        return request('GET', `/api/dicts/event_statuses`)
             .then(response => {
                 setEventStatusOptions(response.data);
+                return response.data;
             })
             .catch(error => {
                 console.error("Błąd podczas pobierania statusów wydarzeń:", error);
                 showSnackbar("Błąd podczas pobierania statusów wydarzeń: " + error.message, 'error');
+                throw error;
             });
     };
 
-    const fetchEventSeries = async () => {
-        request('GET', `/api/dicts/event_series`)
+    const fetchEventSeriesDict = () => {
+        return request('GET', `/api/dicts/event_series`)
             .then(response => {
                 setEventSeriesOptions(response.data);
+                return response.data;
             })
             .catch(error => {
                 console.error("Błąd podczas pobierania serii wydarzeń:", error);
                 showSnackbar("Błąd podczas pobierania serii wydarzeń: " + error.message, 'error');
+                throw error;
             });
     };
+
+    const fetchCategories = () => {
+        return request('GET', `/api/dicts/event_categories`)
+            .then(response => {
+                setEventCategoriesOptions(response.data);
+                return response.data;
+            })
+            .catch(error => {
+                console.error("Błąd podczas pobierania kategorii wydarzeń:", error);
+                showSnackbar("Błąd podczas pobierania kategorii wydarzeń: " + error.message, 'error');
+                throw error;
+            });
+    };  
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
@@ -174,9 +268,11 @@ const CreateEventForm = () => {
     
     useEffect(() => {
         setLoading(true);
-        Promise.all([fetchStatuses(), fetchEventSeries()]).then(() => {
+
+        Promise.all([fetchStatuses(), fetchEventSeriesDict(), fetchCategories()])
+        .then(([statuses, series, categories]) => {
             if (eventId) {
-                fetchEvent(eventId);
+                fetchEvent(eventId, statuses, series, categories);
             }
         })
         .catch(error => {
@@ -186,10 +282,6 @@ const CreateEventForm = () => {
         .finally(() => {
             setLoading(false);
         });
-    
-        if (eventId) {
-            console.log("Edycja wydarzenia o id:", eventId);
-        }
     }, []);
 
     const showSnackbar = (message, severity) => {
@@ -205,52 +297,131 @@ const CreateEventForm = () => {
         setSnackbarOpen(false);
     };
 
+
+
+    const createOrUpdateEventSeries = () => {
+        return new Promise((resolve, reject) => {
+            const singleEventSeries = {
+                name,
+                youtubePreviewUrl,
+                shortDescription: eventSeriesShortDescription,
+                description: eventSeriesDescription,
+                eventCategoryId: eventSeriesCategory?.id,
+                eventTags,
+                artistsIds
+            }
+
+
+            if (isSingleEvent) {
+                if (!eventSeriesCategory) {
+                    showSnackbar("Select event category", 'error');
+                    return;
+                }
+
+                if (eventId) {
+                    request("POST", `/api/eventseries/edit_single/${eventId}`, singleEventSeries)
+                        .then((response) => {
+                            console.log("Zedytowano serie wydarzeń, response:", response)
+                            resolve(eventSeriesId);
+                        })
+                        .catch(error => {
+                            console.error("Błąd przy edycji serii wydarzeń:", error)
+                            showSnackbar("Błąd przy edycji serii wydarzeń: " + error.message, 'error');
+                            reject(error);
+                        });
+                } 
+                else {
+                    request("POST", "/api/eventseries/create_single", singleEventSeries)
+                        .then((response) => {
+                            console.log("Utworzono serie wydarzeń, response:", response)
+                            setEventSeriesId(response.data.id);
+                            resolve(response.data.id);
+                        })
+                        .catch(error => {
+                            console.error("Błąd przy tworzeniu serii wydarzeń:", error)
+                            showSnackbar("Błąd przy tworzeniu serii wydarzeń: " + error.message, 'error');
+                            reject(error);
+                        });
+                }
+            }
+            else {
+                resolve(null);
+            }
+        });
+    };
+
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const event = {
-            name,
-            isPublic,
-            isSingleEvent,
-            description,
-            shortDescription,
-            eventStatusId: eventStatus?.id,
-            eventSeriesId: eventSeries?.id,
-            locationId: location?.id,
-            locationVariantId: locationVariant?.id,
-            eventDateStart,
-            eventDateEnd,
-            ticketPurchaseDateStart,
-            ticketPurchaseDateEnd,
-            maxReservationsPerUser: parseInt(maxReservationsPerUser, 10),
-            forceChoosingWithoutBreaks,
-            mainImage
-        };
+        Promise.all([createOrUpdateEventSeries()])
+            .then(([eventSeriesId]) => {
+                console.log("eventSeriesId", eventSeriesId)
 
-        if (eventId) {
-            request("POST", `/api/events/edit/${eventId}`, event)
-                .then((response) => {
-                    console.log("Utworzono wydarzenie, response:", response)
-                    setCreatedEventId(response.data.id)
-                    setOpenModal(true)
-                })
-                .catch(error => {
-                    console.error("Błąd przy tworzeniu wydarzenia:", error)
-                    showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
-                });
+                const event = {
+                    name,
+                    isPublic,
+                    singleEvent: isSingleEvent,
+                    description,
+                    shortDescription,
+                    eventStatusId: eventStatus?.id,
+                    eventSeriesId: eventSeriesId || eventSeries?.id,
+                    locationId: location?.id,
+                    locationVariantId: locationVariant?.id,
+                    eventDateStart,
+                    eventDateEnd,
+                    ticketPurchaseDateStart,
+                    ticketPurchaseDateEnd,
+                    maxReservationsPerUser: parseInt(maxReservationsPerUser, 10),
+                    forceChoosingWithoutBreaks,
+                    mainImage
+                };
+
+                if (eventId) {
+                    request("POST", `/api/events/edit/${eventId}`, event)
+                        .then((response) => {
+                            console.log("Zedytowano wydarzenie, response:", response)
+                            setCreatedEventId(response.data.id)
+                            setOpenModal(true)
+                        })
+                        .catch(error => {
+                            console.error("Błąd przy edycji wydarzenia:", error)
+                            showSnackbar("Błąd przy edycji wydarzenia: " + error.message, 'error');
+                        });
+                }
+                else {
+                    request("POST", "/api/events/create", event)
+                        .then((response) => {
+                            console.log("Utworzono wydarzenie, response:", response)
+                            setCreatedEventId(response.data.id)
+                            setOpenModal(true)
+                        })
+                        .catch(error => {
+                            console.error("Błąd przy tworzeniu wydarzenia:", error)
+                            showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
+                        });
+                }
+            })
+            .catch(error => {
+                console.error("Error creating or updating event series:", error);
+                showSnackbar("Error creating or updating event series: " + error.message, 'error');
+            });
+    };
+
+    useEffect(() => {
+        if (eventDateEnd !== null && ticketPurchaseDateEnd === null) {
+            setTicketPurchaseDateEnd(eventDateEnd);
         }
-        else {
-            request("POST", "/api/events/create", event)
-                .then((response) => {
-                    console.log("Utworzono wydarzenie, response:", response)
-                    setCreatedEventId(response.data.id)
-                    setOpenModal(true)
-                })
-                .catch(error => {
-                    console.error("Błąd przy tworzeniu wydarzenia:", error)
-                    showSnackbar("Błąd przy tworzeniu wydarzenia: " + error.message, 'error');
-                });
-        }
+    }, [eventDateEnd]);
+
+
+
+    const handleTagsChange = (updatedTags) => {
+        setEventTags(updatedTags);
+    };
+
+    const handleArtistsChange = (updatedArtists) => {
+        setArtistsIds(updatedArtists.map(artist => artist.id));
     };
 
 
@@ -284,7 +455,7 @@ const CreateEventForm = () => {
 
                     <Box sx={{ mb: 2 }}>
                         <Button variant="contained" component="label" sx={{ mb: 2 }}>
-                            Add main photo
+                            {mainImage ? 'Change main image' : 'Upload main image'}
                             <input type="file" hidden onChange={handleImageUpload} />
                         </Button>
 
@@ -305,15 +476,6 @@ const CreateEventForm = () => {
                         />}
                         label="Public event"
                     />
-                    
-                    <FormControlLabel
-                        sx={{ mb: 2 }}
-                        control={<Checkbox
-                            checked={isSingleEvent}
-                            onChange={e => setIsSingleEvent(e.target.checked)}
-                        />}
-                        label="Single event"
-                    />
 
                     <TextField
                         label="Short Description"
@@ -323,7 +485,7 @@ const CreateEventForm = () => {
                         value={shortDescription}
                         onChange={e => setShortDescription(e.target.value)}
                         sx={{ mb: 2 }}
-                        htmlInput={{ maxLength: 200 }}
+                        inputProps={{ maxLength: 200 }}
                         helperText={`${shortDescription.length}/200`} 
                     />
                     
@@ -358,15 +520,97 @@ const CreateEventForm = () => {
                             )}
                         sx={{ mb: 2 }}
                     />
-
-                    <Autocomplete
-                        options={eventSeriesOptions}
-                        getOptionLabel={(option) => option.name}
-                        value={eventSeries}
-                        onChange={(e, value) => setEventSeries(value)}
-                        renderInput={(params) => <TextField {...params} label="Event series" />}
+                    
+                    <FormControlLabel
                         sx={{ mb: 2 }}
+                        control={<Checkbox
+                            checked={isSingleEvent}
+                            onChange={e => setIsSingleEvent(e.target.checked)}
+                        />}
+                        label="Single event"
+                        disabled={!!eventId}
                     />
+
+                    {isSingleEvent ? (
+                        <Paper sx={{ p: 2, mb: 2 }}>
+                            <Typography variant="h6" gutterBottom mb={2}>
+                                Single Event Form
+                            </Typography>
+
+                            <TextField
+                                label="YouTube Preview URL"
+                                fullWidth
+                                value={youtubePreviewUrl}
+                                onChange={e => setYoutubePreviewUrl(e.target.value)}
+                                sx={{ mb: 2 }}
+                            />
+
+                            <Autocomplete
+                                options={eventCategoriesOptions}
+                                getOptionLabel={(option) => option.name}
+                                value={eventSeriesCategory}
+                                onChange={(e, value) => setEventSeriesCategory(value)}
+                                renderInput={(params) => <TextField {...params} label="Event categories" />}
+                                sx={{ mb: 2 }}
+                            />
+
+                            <TextField
+                                label="Short Description"
+                                fullWidth
+                                multiline
+                                rows={4}
+                                value={eventSeriesShortDescription}
+                                onChange={e => setEventSeriesShortDescription(e.target.value)}
+                                sx={{ mb: 2 }}
+                                inputProps={{ maxLength: 200 }}
+                                helperText={`${eventSeriesShortDescription.length}/200`} 
+                            />
+                            
+                            <ReactQuill
+                                value={eventSeriesDescription}
+                                onChange={setEventSeriesDescription}
+                                placeholder="Enter description of the event"
+                                style={{ marginBottom: '56px', height: '260px' }}
+                                modules={{
+                                    toolbar: [
+                                        [{ 'header': '1' }, { 'header': '2' }, { 'header': '3' }, { 'header': '4' }, { 'font': [] }],
+                                        [{ 'size': [] }],
+                                        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                        ['link', 'image'],
+                                        ['clean']
+                                    ],
+                                }}
+                            />
+
+                            <TagsInput
+                                ref={tagsInputRef}
+                                onTagsChange={handleTagsChange}
+                            />
+
+                            <ArtistsInput
+                                ref={artistsInputRef}
+                                onArtistsChange={handleArtistsChange}
+                            />
+
+                        </Paper>
+
+                    ) : (
+                        <Autocomplete
+                            options={eventSeriesOptions}
+                            getOptionLabel={(option) => option.name}
+                            value={eventSeries}
+                            onChange={(e, value) => setEventSeries(value)}
+                            renderInput={(params) => <TextField {...params} label="Event series" />}
+                            sx={{ mb: 2 }}
+                        />
+                    )}
+                    
+                    {isEventSeatStatusesCreated && (
+                        <Typography variant="body1" gutterBottom mb={2} color='warning'>
+                            Event seat statuses created, you can't change location or location variant.
+                        </Typography>
+                    )}
 
                     <Autocomplete
                         required
@@ -396,6 +640,7 @@ const CreateEventForm = () => {
                         />)}
                         noOptionsText="Insert to see options"
                         sx={{ mb: 2 }}
+                        disabled={isEventSeatStatusesCreated}
                     />
 
                     <Autocomplete
@@ -406,48 +651,51 @@ const CreateEventForm = () => {
                         onChange={(e, value) => setLocationVariant(value)}
                         renderInput={(params) => <TextField {...params} label="Location variant" />}
                         sx={{ mb: 2 }}
-                        disabled={!location}
+                        disabled={!location || isEventSeatStatusesCreated}
                     />
 
-
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DateTimePicker 
-                            label="Event start date"
-                            value={eventDateStart}
-                            onChange={setEventDateStart}
-                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
-                        />
-                    </LocalizationProvider>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DateTimePicker 
-                            label="Event end date"
-                            value={eventDateEnd}
-                            onChange={setEventDateEnd}
-                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
-                        />
-                    </LocalizationProvider>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DateTimePicker
-                            label="Ticket sales begin"
-                            value={ticketPurchaseDateStart}
-                            onChange={setTicketPurchaseDateStart}
-                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
-                        />
-                    </LocalizationProvider>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DateTimePicker
-                            label="Ticket sales end"
-                            value={ticketPurchaseDateEnd}
-                            onChange={setTicketPurchaseDateEnd}
-                            renderInput={(params) => <TextField {...params} sx={{ mb: 2 }} />}
-                        />
-                    </LocalizationProvider>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} sx={{ flex: 1 }}>
+                            <DateTimePicker 
+                                label="Event start date"
+                                value={eventDateStart}
+                                onChange={setEventDateStart}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} sx={{ flex: 1 }}>
+                            <DateTimePicker 
+                                label="Event end date"
+                                value={eventDateEnd}
+                                onChange={setEventDateEnd}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} sx={{ flex: 1 }}>
+                            <DateTimePicker
+                                label="Ticket sales begin"
+                                value={ticketPurchaseDateStart}
+                                onChange={setTicketPurchaseDateStart}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
+                        <LocalizationProvider dateAdapter={AdapterDateFns} sx={{ flex: 1 }}>
+                            <DateTimePicker
+                                label="Ticket sales end"
+                                value={ticketPurchaseDateEnd}
+                                onChange={setTicketPurchaseDateEnd}
+                                renderInput={(params) => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
+                    </Box>
 
                     <TextField
                         label="Maximum number of bookings per user"
                         type="number"
                         fullWidth
-                        value={maxReservationsPerUser}
+                        value={maxReservationsPerUser || 10}
                         onChange={e => setMaxReservationsPerUser(e.target.value)}
                         sx={{ mb: 2 }}
                     />
@@ -466,7 +714,7 @@ const CreateEventForm = () => {
             <Dialog open={openModal} onClose={handleCloseModal}>
                 <DialogTitle>Event Created Successfully!</DialogTitle>
                 <DialogContent>
-                    Your event has been created. Would you like to go to the event page or stay here?
+                    Your event has been  {eventId ? 'edited.' : 'created.' } Would you like to go to the event page or stay here?
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseModal} color="primary">

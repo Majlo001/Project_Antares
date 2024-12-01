@@ -1,5 +1,5 @@
 
-const getFullDateFormArray = (eventDate) => {
+export const getFullDateFormArray = (eventDate) => {
     return new Date(eventDate[0], eventDate[1] - 1, eventDate[2], eventDate[3], eventDate[4]);
 }
 
