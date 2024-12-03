@@ -34,7 +34,7 @@ const LocationSeatChart = () => {
         request("GET", `/api/location_seat_chart/get_chart?eventId=${eventId}`).then((response) => {
             setLocationVariantId(response.data.locationVariantId);
             setLocationName(response.data.locationName);
-            setMaxReservationsPerUser(response.data.maxReservationsPerUser);
+            setMaxReservationsPerUser(response.data.maxReservationsPerUser || 10);
             setForceChoosingWithoutBreaks(response.data.forceChoosingWithoutBreaks);
 
             setSectors(response.data.sectors);
@@ -237,11 +237,8 @@ const LocationSeatChart = () => {
                                                     selectedSeatsBody.seatStatusId,
                                                 ];
 
-                                                request("POST", "/api/reservation/unreserve", body, null, {
-                                                    headers: {
-                                                        'Content-Type': 'application/json'
-                                                    }
-                                                }).then(() => {
+                                                request("POST", "/api/reservation/unreserve", body, null)
+                                                .then(() => {
                                                     setSelectedSeats(selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id));
 
                                                     const selectedSeatsMap = JSON.parse(sessionStorage.getItem('selectedSeatsMap')) || {};
@@ -251,7 +248,8 @@ const LocationSeatChart = () => {
 
                                                     updateCart(eventId, selectedSeats.filter((selSeat) => selSeat[0].seatId !== seat.id));
                                                     loadSectorSeatStatus(sector.id);
-                                                }).catch((error) => {
+                                                })
+                                                .catch((error) => {
                                                     console.error("Błąd przy odrezerwacji:", error.response);
                                                     loadSectorSeatStatus(sector.id);
                                                 });
@@ -358,7 +356,7 @@ const LocationSeatChart = () => {
                                                         <AccessibleRoundedIcon />
                                                     </div>
                                                 )} */}
-                                                <Text
+                                                {/* <Text
                                                     text={isSelected ? "" : !seat.seatAvailable ? "" : seat.seatNumber}
                                                     pointerEvents="none"
                                                     width={10}
@@ -371,7 +369,7 @@ const LocationSeatChart = () => {
                                                     align="center"
                                                     verticalAlign="middle"
                                                     rotation={seatRotation}
-                                                />
+                                                /> */}
                                             </Group>
                                         );
                                     })}

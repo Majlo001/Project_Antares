@@ -12,7 +12,9 @@ import { Container,
 import { useParams, useNavigate } from 'react-router-dom';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { request } from '../helpers/axios_helper';
-import { is } from 'date-fns/locale';
+
+import SeatsChart from '../chartComponents/SeatsChart';
+import TicketsChart from '../chartComponents/TicketsChart';
 
 
 const AdminEventDashboard = () => {
@@ -40,8 +42,18 @@ const AdminEventDashboard = () => {
             .catch((error) => {
                 console.error("Błąd podczas pobierania danych:", error);
             });
-    }, [eventId]);
+    }, []);
 
+    const updatePrices = () => {
+        request("POST", `/api/events/update_ticket_prices/${eventId}`, sectors)
+            .then((response) => {
+                console.log("Prices updated", response.data);
+            })
+            .catch((error) => {
+                console.error("Błąd podczas aktualizacji cen:", error);
+            });
+
+    }
         
     const fetchEventDetails = (ticketTypes) => {
         request("GET", `/api/events/event_dashboard/${eventId}`, null)
@@ -55,12 +67,14 @@ const AdminEventDashboard = () => {
                 setSectors(response.data.sectors);
 
 
-                if (response.data.isEventSeatStatusesCreated) {
+                if (!response.data.isEventSeatStatusesCreated) {
                     const allPricesValid = response.data.sectors.every((sector) =>
-                        ticketTypes.every((ticketType) =>
-                            sector.ticketPrices.some(
-                                (ticket) => ticket.ticketTypeName === ticketType.name && ticket.price > 0
-                            )
+                        sector.ticketPrices.some(
+                            (ticket) => {
+                                if (ticket.ticketTypeName === "Normal" && ticket.price > 0) {
+                                    return true;   
+                                }
+                            }
                         )
                     );
         
@@ -91,7 +105,7 @@ const AdminEventDashboard = () => {
         navigate(`/admin/form/event/${eventId}`);
     };
 
-    const handlePriceChange = (sectorId, ticketId, ticketTypeName, newPrice) => {
+    const handlePriceChange = (sectorId, ticketId, ticketTypeId, ticketTypeName, newPrice) => {
         setSectors((prevSectors) =>
             prevSectors.map((sector) =>
                 sector.id === sectorId
@@ -107,6 +121,7 @@ const AdminEventDashboard = () => {
                                     ...sector.ticketPrices,
                                     {
                                         id: Date.now(),
+                                        ticketTypeId,
                                         ticketTypeName,
                                         price: newPrice,
                                     },
@@ -118,6 +133,17 @@ const AdminEventDashboard = () => {
         
         console.log(sectors);
     };
+
+    const handleCreateEventSeatStatusesClick = () => {
+        request("POST", `/api/events/generateEventSeatStatusEntities?event_id=${eventId}`)
+            .then((response) => {
+                console.log("Event seat statuses created", response.data);
+                setIsEventSeatStatusesCreated(true);
+            })
+            .catch((error) => {
+                console.error("Błąd podczas tworzenia statusów miejsc:", error);
+            })
+    }
 
 
     
@@ -140,17 +166,38 @@ const AdminEventDashboard = () => {
                     </Box>
 
                     {!isEventSeatStatusesCreated ? (
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {}}
-                            component="button"
-                            sx={{ mt: 2 }}
-                            disabled={!canCreateEventSeatStatuses}
-                        >
-                            Create Event Seat Statuses
-                        </Button>
-                    ) : null}
+                        <>
+                            {canCreateEventSeatStatuses && (
+                                <Typography variant="body1" color='warning'>
+                                    You need to set prices (at least for type Normal) for all sectors to create event seat statuses
+                                </Typography>
+                            )}
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => handleCreateEventSeatStatusesClick()}
+                                component="button"
+                                sx={{ mt: 2 }}
+                                disabled={!canCreateEventSeatStatuses}
+                            >
+                                Create Event Seat Statuses
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Typography variant="h4" mt={4} mb={2}>
+                                {eventName} statistics
+                            </Typography>
+                            <Box display="flex" width="100%">
+                                <Box width="33%">
+                                    <SeatsChart eventId={eventId} />
+                                </Box>
+                                <Box width="67%">
+                                    <TicketsChart eventId={eventId} />
+                                </Box>
+                            </Box>
+                        </>
+                    )}
                     
 
                     <Box mt={2}>
@@ -178,6 +225,7 @@ const AdminEventDashboard = () => {
                                                         handlePriceChange(
                                                             sector.id,
                                                             existingTicket ? existingTicket.id : null,
+                                                            ticketType.id,
                                                             ticketType.name,
                                                             e.target.value
                                                         )
@@ -198,9 +246,7 @@ const AdminEventDashboard = () => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => {
-                            console.log('Save button clicked');
-                        }}
+                        onClick={updatePrices}
                         component="button"
                         sx={{ mt: 2 }}
                     >

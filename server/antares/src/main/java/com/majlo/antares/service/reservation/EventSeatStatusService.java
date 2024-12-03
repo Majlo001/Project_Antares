@@ -176,9 +176,11 @@ public class EventSeatStatusService {
         reservedSeats.removeIf(seatStatus -> seatStatus.getId().equals(seatStatusID));
     }
 
-    public void generateEventSeatStatuses(Event event) {
+    public int generateEventSeatStatuses(Event event) {
         LocationVariant eventLocationVariant = event.getLocationVariant();
         List<Sector> sectors = eventLocationVariant.getSectors();
+
+        int totalSeats = 0;
 
         for (Sector sector : sectors) {
             if (!sector.isStanding()) {
@@ -193,6 +195,8 @@ public class EventSeatStatusService {
                         seatStatus.setSector(sector);
                         eventSeatStatusRepository.save(seatStatus);
                     }
+
+                    totalSeats += row.getSeats().size();
                 }
             } else {
                 for (int i = 0; i < sector.getStandingCapacity(); i++) {
@@ -204,7 +208,11 @@ public class EventSeatStatusService {
                     seatStatus.setSector(sector);
                     eventSeatStatusRepository.save(seatStatus);
                 }
+
+                totalSeats += sector.getStandingCapacity();
             }
         }
+
+        return totalSeats;
     }
 }

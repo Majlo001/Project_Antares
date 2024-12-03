@@ -24,16 +24,16 @@ public class LocationSeatChartDto {
     private Integer maxReservationsPerUser;
     private Boolean forceChoosingWithoutBreaks;
 
-    public static LocationSeatChartDto fromLocationVariant(LocationVariant locationVariant, Integer maxReservationsPerUser, Boolean forceChoosingWithoutBreaks) {
+    public static LocationSeatChartDto fromLocationVariant(LocationVariant locationVariant, Event event) {
         return LocationSeatChartDto.builder()
                 .locationVariantId(locationVariant.getId())
                 .locationName(locationVariant.getLocation().getName())
                 .locationVariantName(locationVariant.getName())
                 .sectors(locationVariant.getSectors().stream()
-                        .map(SectorForLocationSeatChartDto::fromSector)
+                        .map(sector -> SectorForLocationSeatChartDto.fromSector(sector, event))
                         .toList())
-                .maxReservationsPerUser(maxReservationsPerUser)
-                .forceChoosingWithoutBreaks(forceChoosingWithoutBreaks)
+                .maxReservationsPerUser(event.getMaxReservationsPerUser())
+                .forceChoosingWithoutBreaks(event.getForceChoosingWithoutBreaks())
                 .build();
     }
 }

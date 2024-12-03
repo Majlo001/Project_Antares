@@ -19,6 +19,8 @@ import AdminPanel from './admin/AdminPanel';
 import AdminEventsPage from './admin/AdminEventsPage';
 import AdminEventDashboard from './admin/AdminEventDashboard';
 
+import QRScannerPage from './ticket_controller/QRScannerPage';
+
 import CreateEventForm from './creationForms/CreateEventForm';
 import LocationSeatChart from './LocationSeatChart';
 import PaymentSuccess from './PaymentSuccess';
@@ -198,6 +200,12 @@ const AppContent = () => {
                             
                             <Route path="/admin/form/event" element={<CreateEventForm />} />
                             <Route path="/admin/form/event/:eventId" element={<CreateEventForm />} />
+                        </Routes>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                        <Routes>
+                            <Route path="/ticket_qr/" element={<QRScannerPage />} />
                         </Routes>
                     </Box>
                 </Container>

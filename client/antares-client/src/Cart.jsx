@@ -65,8 +65,6 @@ const Cart = () => {
                 sectorIds: Array.from(sectors).join(',')
             }).toString();
 
-            console.log("params:", params);
-
             request("GET", `/api/cart_data/tickets_info?${params}`, null, null)
                 .then((response) => {
                     console.log("response:", response.data);

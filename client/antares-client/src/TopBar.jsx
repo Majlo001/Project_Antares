@@ -47,7 +47,7 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
 
   return (
     <>
-    {!location.pathname.startsWith('/admin') && (
+    {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/ticket_qr') && (
         <AppBar position="static" sx={{ mb: 4 }}>
             <Toolbar>
                 <Typography variant="h6" component="div" 

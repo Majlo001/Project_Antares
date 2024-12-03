@@ -2,10 +2,7 @@ package com.majlo.antares.dtos.eventDashboard;
 
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.TicketPrice;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 

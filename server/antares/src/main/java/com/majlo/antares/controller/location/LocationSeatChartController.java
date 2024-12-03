@@ -39,9 +39,9 @@ public class LocationSeatChartController {
             Event event = eventRepository.findById(eventId)
                     .orElseThrow(() -> new IllegalArgumentException("Event not found"));
 
-            LocationSeatChartDto locationSeatChartDto = LocationSeatChartDto.fromLocationVariant(locationVariant,
-                    event.getMaxReservationsPerUser(),
-                    event.getForceChoosingWithoutBreaks());
+            LocationSeatChartDto locationSeatChartDto = LocationSeatChartDto.fromLocationVariant(
+                    locationVariant,
+                    event);
             return ResponseEntity.ok(locationSeatChartDto);
         }
         catch (Exception e) {

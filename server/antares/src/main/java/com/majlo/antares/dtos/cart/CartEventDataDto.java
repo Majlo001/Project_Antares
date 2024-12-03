@@ -35,7 +35,7 @@ public class CartEventDataDto {
                 .eventDateEnd(event.getEventDateEnd())
                 .sectorsInfo(event.getLocationVariant().getSectors().stream()
                         .filter(sector -> selectedSectorsIds.contains(sector.getId()))
-                        .map(SectorInfoForCartEventDataDto::fromSector)
+                        .map(sector -> SectorInfoForCartEventDataDto.fromSector(sector, event))
                         .toList())
                 .build();
     }

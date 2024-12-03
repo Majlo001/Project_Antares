@@ -95,16 +95,15 @@ public class ReservationController {
             @RequestBody List<Long> reservedSeatIds,
             HttpServletRequest request) {
 
-        Long userId = null;
         try {
-            userId = authorizationService.getAuthenticatedUserId(authHeader);
+            Long userId = authorizationService.getAuthenticatedUserId(authHeader);
+
+            eventSeatStatusService.unreserveSeats(reservedSeatIds, userId);
+            return ResponseEntity.ok("Seats unreserved successfully");
         }
         catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-
-        eventSeatStatusService.unreserveSeats(reservedSeatIds, userId);
-        return ResponseEntity.ok("Seats unreserved successfully");
     }
 
 

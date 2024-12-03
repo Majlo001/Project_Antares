@@ -1,5 +1,6 @@
 package com.majlo.antares.dtos.locationSeatChart;
 
+import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.location.Row;
 import com.majlo.antares.model.location.Sector;
 import com.majlo.antares.model.location.TicketPrice;
@@ -25,7 +26,7 @@ public class SectorForLocationSeatChartDto {
     private List<RowForLocationSeatChartDto> rows;
     private List<TicketPriceForLocationSeatChartDto> ticketPrices;
 
-    public static SectorForLocationSeatChartDto fromSector(Sector sector) {
+    public static SectorForLocationSeatChartDto fromSector(Sector sector, Event event) {
         return SectorForLocationSeatChartDto.builder()
                 .id(sector.getId())
                 .name(sector.getName())
@@ -38,6 +39,7 @@ public class SectorForLocationSeatChartDto {
                         .map(RowForLocationSeatChartDto::fromRow)
                         .toList())
                 .ticketPrices(sector.getTicketPrices().stream()
+                        .filter(ticketPrice -> ticketPrice.getEvent().equals(event))
                         .map(TicketPriceForLocationSeatChartDto::fromTicketPrice)
                         .toList())
                 .build();

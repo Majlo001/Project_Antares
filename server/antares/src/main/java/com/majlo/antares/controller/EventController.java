@@ -7,6 +7,8 @@ import com.majlo.antares.dtos.admin.EventOwnerPreviewDto;
 import com.majlo.antares.dtos.admin.EventOwnerPreviewResponseDto;
 import com.majlo.antares.dtos.creation.EventCreationDto;
 import com.majlo.antares.dtos.eventDashboard.EventDashboardDto;
+import com.majlo.antares.dtos.eventDashboard.SectorForEventDashboardDto;
+import com.majlo.antares.dtos.eventDashboard.TicketPriceForEventDashboardDto;
 import com.majlo.antares.dtos.eventDetail.EventDetailDto;
 import com.majlo.antares.dtos.events.EventDto;
 import com.majlo.antares.dtos.eventsListPreview.EventListPreviewDto;
@@ -42,6 +44,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/events")
@@ -296,30 +299,86 @@ public class EventController {
     }
 
 
+    @PostMapping("/update_ticket_prices/{eventId}")
+    @Transactional
+    public ResponseEntity<?> updateTicketPrices(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long eventId,
+            @RequestBody List<SectorForEventDashboardDto> sectorDtos) {
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
+            Event event = eventRepository.findById(eventId).orElseThrow();
+
+            if (!Objects.equals(event.getEventOwner().getId(), authorizationService.getAuthenticatedUserId(authHeader))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not the owner of the event");
+            }
+
+
+            for (SectorForEventDashboardDto sectorDto : sectorDtos) {
+                Sector sector = sectorRepository.findById(sectorDto.getId()).orElseThrow();
+
+                for (TicketPriceForEventDashboardDto ticketPriceDto : sectorDto.getTicketPrices()) {
+                    if (ticketPriceDto != null && ticketPriceDto.getPrice() > 0) {
+                        TicketType ticketType = ticketTypeRepository.findById(ticketPriceDto.getTicketTypeId()).orElseThrow();
+
+                        TicketPrice ticketPrice = ticketPriceRepository
+                                .findBySectorAndEventAndTicketType(sector, event, ticketType)
+                                .orElse(null);
+
+                        if (ticketPrice == null) {
+                            TicketPrice newTicketPrice = TicketPrice.builder()
+                                    .sector(sector)
+                                    .event(event)
+                                    .ticketType(ticketType)
+                                    .price(Double.parseDouble(String.valueOf(ticketPriceDto.getPrice())))
+                                    .build();
+
+                            ticketPriceRepository.save(newTicketPrice);
+                        }
+                        else {
+                            if (ticketPrice.getPrice() != Double.parseDouble(String.valueOf(ticketPriceDto.getPrice()))) {
+                                ticketPrice.setPrice(Double.parseDouble(String.valueOf(ticketPriceDto.getPrice())));
+                                ticketPriceRepository.save(ticketPrice);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ResponseEntity.ok("Ticket prices updated successfully");
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid");
+    }
 
 
 
 
 
-    // TODO: Additional function for setting ticket price for sector
-
-    // TODO: Add JWT token, account and role validation
     @PostMapping("/generateEventSeatStatusEntities")
     @Transactional
-    public ResponseEntity<?> generateEventSeatStatusEntities(@RequestParam Long event_id) {
-        try {
-            Event event = eventRepository.findById(event_id).orElseThrow(() ->
-                    new NoSuchElementException("Event with ID " + event_id + " not found"));
+    public ResponseEntity<?> generateEventSeatStatusEntities(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam Long event_id) {
 
-            eventSeatStatusService.generateEventSeatStatuses(event);
-            return ResponseEntity.ok("Event seat statuses generated successfully for event ID: " + event_id);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                Event event = eventRepository.findById(event_id).orElseThrow(() ->
+                        new NoSuchElementException("Event with ID " + event_id + " not found"));
 
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+                int totalSeats = eventSeatStatusService.generateEventSeatStatuses(event);
+                event.setStatus(eventStatusRepository.findById(2L).orElseThrow());
+                return ResponseEntity.ok("Event seat statuses generated successfully for event ID: " + event_id + ". Total seats created: " + totalSeats);
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while generating seat statuses: " + e.getMessage());
+            } catch (NoSuchElementException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("An error occurred while generating seat statuses: " + e.getMessage());
+            }
         }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid");
     }
 }
