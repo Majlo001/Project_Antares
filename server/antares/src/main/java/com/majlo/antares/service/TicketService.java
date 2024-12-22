@@ -2,11 +2,13 @@ package com.majlo.antares.service;
 
 import com.google.zxing.WriterException;
 import com.itextpdf.html2pdf.HtmlConverter;
+import com.majlo.antares.dtos.tickets.ValidationInfoDto;
 import com.majlo.antares.model.User;
 import com.majlo.antares.model.events.Event;
 import com.majlo.antares.model.transaction.Ticket;
 import com.majlo.antares.repository.transaction.TicketRepository;
 import com.majlo.antares.util.QrCodeGenerator;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -100,29 +103,34 @@ public class TicketService {
         return Files.readAllBytes(filePath);
     }
 
-    public boolean validateTicket(String qrCodeData) {
+    @Transactional
+    public ValidationInfoDto validateTicket(String qrCodeData) {
         String[] parts = qrCodeData.split("_");
 
         if (parts.length != 2) {
-            return false;
+            return null;
         }
 
         String uuid = parts[0];
-        String ticketId = parts[1];
+        Long ticketId = Long.parseLong(parts[1]);
 
-        Ticket ticket = ticketRepository.findById(Long.valueOf(ticketId)).orElse(null);
+        Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
 
         if (ticket == null) {
-            return false;
+            return null;
         }
 
-        if (!ticket.getIsValidated() || !ticket.getValidationUuid().equals(uuid)) {
-            return false;
+//        if (ticket.getIsValidated()) {
+//            return null;
+//        }
+
+        if (!(Objects.equals(ticket.getValidationUuid(), uuid))) {
+            return null;
         }
 
         ticket.setIsValidated(true);
         ticketRepository.save(ticket);
 
-        return true;
+        return ValidationInfoDto.fromTicket(ticket);
     }
 }

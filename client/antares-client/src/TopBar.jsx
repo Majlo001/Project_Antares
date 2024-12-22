@@ -73,16 +73,16 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
                             Admin
                         </Typography>
                     )}
-                    {isLoggedIn && getRole() !== 'TICKET_CONTROLLER' && (
+                    {isLoggedIn && getRole() === 'TICKET_CONTROLLER' && (
                         <Typography
                             variant="h6"
                             component="div"
                             sx={{ cursor: 'pointer', mr: 2 }}
                             onClick={() => {
-                                navigate("/admin");
+                                navigate("/ticket_qr");
                             }}
                         >
-                            Admin
+                            Ticket Controller
                         </Typography>
                     )}
                 </Box>

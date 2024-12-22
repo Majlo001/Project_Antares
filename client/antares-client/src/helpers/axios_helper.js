@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
+import https from 'https';
 
 
 export const getAuthToken = () => {
@@ -46,7 +47,18 @@ export const getDataFromToken = () => {
 
 
 
-axios.defaults.baseURL = 'http://localhost:8080';
+// const axiosInstance = axios.create({
+//     baseURL: '/api', // Proxy załatwia przekierowanie do backendu
+//     httpsAgent: new https.Agent({
+//         rejectUnauthorized: false, // Ignorowanie błędów SSL
+//     }),
+// });
+
+
+axios.defaults.baseURL = 'https://192.168.0.100:8443';
+// axios.defaults.httpsAgent = new https.Agent({
+//     rejectUnauthorized: false, // Ignorowanie błędów certyfikatu SSL
+// });
 // axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 export const request = (method, url, data, params, config = { responseType: 'json'}) => {

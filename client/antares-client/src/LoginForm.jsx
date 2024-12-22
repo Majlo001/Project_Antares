@@ -78,6 +78,7 @@ const LoginForm = ({ onLogin, onRegister }) => {
                         onChange={onChangeHandler}
                         fullWidth
                     />
+                    
                     <Button type="submit" variant="contained" color="primary" fullWidth>
                         Sign in
                     </Button>

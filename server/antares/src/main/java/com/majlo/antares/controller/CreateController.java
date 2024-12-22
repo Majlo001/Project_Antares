@@ -366,7 +366,7 @@ public class CreateController {
             event.setEventDateStart(LocalDateTime.now().plusDays(10));
             event.setEventDateEnd(LocalDateTime.now().plusDays(10).plusHours(4));
             event.setMaxReservationsPerUser(5);
-            event.setStatus(eventStatusRepository.findById(1L).get());
+            event.setStatus(eventStatusRepository.findById(2L).get());
             event.setEventOwner(eventOwnerRepository.findById(1L).get());
             event.setCreatedAt(LocalDateTime.now());
             event.setMainImage("/api/images/files/b9fec7e0-2de4-4d6e-8f7b-761df7d2efcb.jpg");
@@ -432,7 +432,7 @@ public class CreateController {
         event.setEventDateStart(LocalDateTime.now().plusDays(10));
         event.setEventDateEnd(LocalDateTime.now().plusDays(10).plusHours(4));
         event.setMaxReservationsPerUser(5);
-        event.setStatus(eventStatusRepository.findById(1L).get());
+        event.setStatus(eventStatusRepository.findById(2L).get());
         event.setEventOwner(eventOwnerRepository.findById(1L).get());
         event.setCreatedAt(LocalDateTime.now());
         event.setMainImage("/api/images/files/33311393-5834-408a-b079-b214c320508b.jpg");
@@ -492,7 +492,7 @@ public class CreateController {
         event.setEventDateStart(LocalDateTime.now().plusDays(10));
         event.setEventDateEnd(LocalDateTime.now().plusDays(10).plusHours(4));
         event.setMaxReservationsPerUser(5);
-        event.setStatus(eventStatusRepository.findById(1L).get());
+        event.setStatus(eventStatusRepository.findById(2L).get());
         event.setEventOwner(eventOwnerRepository.findById(1L).get());
         event.setCreatedAt(LocalDateTime.now());
         event.setMainImage("/api/images/files/469a6096-203d-48d0-8752-872ed80daefc.jpg");

@@ -2,6 +2,7 @@ package com.majlo.antares.controller;
 
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.majlo.antares.dtos.tickets.UserTicketDto;
+import com.majlo.antares.dtos.tickets.ValidationInfoDto;
 import com.majlo.antares.model.transaction.Ticket;
 import com.majlo.antares.repository.transaction.TicketRepository;
 import com.majlo.antares.service.AuthorizationService;
@@ -112,5 +113,17 @@ public class TicketController {
 //        }
 //    }
 
+
+    @GetMapping("/validate/{ticketCode}")
+    public ResponseEntity<?> validateTicket(@PathVariable String ticketCode) {
+        ValidationInfoDto validationInfoDto = ticketService.validateTicket(ticketCode);
+
+        if (validationInfoDto != null) {
+            return ResponseEntity.ok(validationInfoDto);
+        }
+
+        System.out.println("Chuja nie działa");
+        return ResponseEntity.badRequest().build();
+    }
 
 }

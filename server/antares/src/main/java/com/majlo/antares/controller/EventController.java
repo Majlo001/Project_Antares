@@ -354,6 +354,27 @@ public class EventController {
 
 
 
+    @GetMapping("/event_stats/{eventId}")
+    @Transactional
+    public ResponseEntity<?> getEventStats(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long eventId) {
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            Event event = eventRepository.findById(eventId).orElseThrow();
+
+            if (!Objects.equals(event.getEventOwner().getId(), authorizationService.getAuthenticatedUserId(authHeader))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not the owner of the event");
+            }
+
+
+
+            return ResponseEntity.ok(EventDashboardDto.fromEvent(event));
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid");
+    }
+
 
 
     @PostMapping("/generateEventSeatStatusEntities")
