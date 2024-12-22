@@ -95,7 +95,7 @@ const UserTickets = () => {
                         <Grid item sm={12} md={6} lg={4} key={ticket.ticketId}>
                             <Card
                                 sx={{
-                                    border: "1px solid #81c784",
+                                    border: ticket.isValidated ? "1px solid #e57373" : "1px solid #81c784",
                                     position: "relative",
                                 }}
                             >
@@ -266,6 +266,151 @@ const UserTickets = () => {
                     {expiredTickets.length > 0 ? (
                         expiredTickets.map((ticket) => (
                             <Grid item sm={12} md={6} lg={4} key={ticket.ticketId}>
+                                <Card
+                                    sx={{
+                                        border: "1px solid #b0bec5",
+                                        position: "relative",
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            position: "absolute",
+                                            top: 0,
+                                            right: 0,
+                                            backgroundColor: "#b0bec5",
+                                            color: "#fff",
+                                            padding: "4px 8px",
+                                            borderRadius: "0 0 0 8px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <ConfirmationNumberIcon sx={{ mr: 1 }} />
+                                        <Typography variant="body2">Expired</Typography>
+                                    </Box>
+                                    <Box p={2}>
+                                        <a 
+                                            href={"/events/" + ticket.eventId}
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            style={{ textDecoration: "none", color: "inherit" }}
+                                        >
+                                            <Typography
+                                                variant="h6"
+                                                color="text.primary"
+                                                p={2}
+                                                sx = {{ pb: 0 }}
+                                            >
+                                                <strong>{ticket.eventName}</strong>
+                                            </Typography>
+                                        </a>
+                                        <CardHeader
+                                            title={formatDateTime(ticket.eventDate)}
+                                            avatar={<EventIcon color="gray" />}
+                                            sx = {{ pb: 0 }}
+                                        />
+                                        <a 
+                                            href={"/locations/" + ticket.eventLocationId}
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            style={{ textDecoration: "none", color: "inherit" }}
+                                        >
+                                            <CardHeader
+                                                title={ticket.eventLocation}
+                                                avatar={<PlaceIcon color="gray" />}
+                                                sx={{ pb: 0 }}
+                                            />
+                                        </a>
+                                        <CardContent>
+                                            <Grid container spacing={2} alignItems="start">
+                                                <Grid item>
+                                                    <EventSeatIcon color="gray"/>
+                                                </Grid>
+
+                                                <Grid item xs>
+                                                    <Grid container spacing={1}>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                Sector: <strong>{ticket.sectorName}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                Row: <strong>{ticket.rowNumber}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                seat: <strong>{ticket.seatNumber}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                    </Grid>
+
+                                                    <Divider sx={{ my: 1 }} />
+
+                                                    <Grid container spacing={1}>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                Price: <strong>{ticket.ticketPrice.toFixed(2)} PLN</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                Ticket type: <strong>{ticket.ticketTypeName}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                        <Grid item xs={12}>
+                                                            <Typography variant="body2">
+                                                                Ticket number: <strong>{ticket.ticketId}</strong>
+                                                            </Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </CardContent>
+
+                                        <Divider sx={{ my: 1 }} />
+
+                                        <CardActions>
+                                            <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                                                <Button
+                                                    color="gray"
+                                                    onClick={() => openTicketInNewTab(ticket.ticketPdfLink)}
+                                                    target="_blank"
+                                                    startIcon={<LaunchIcon />}
+                                                    p={0}
+                                                    sx={{
+                                                        minWidth: 0,
+                                                        '& .MuiButton-startIcon': {
+                                                            margin: 1,
+                                                        },
+                                                        '&:hover': {
+                                                            color: 'primary.main'
+                                                        },
+                                                    }}
+                                                />
+
+                                                <Button
+                                                    color="gray"
+                                                    onClick={() => downloadTicket(ticket.ticketPdfLink)}
+                                                    target="_blank"
+                                                    download
+                                                    startIcon={<DownloadIcon />}
+                                                    p={0}
+                                                    sx={{
+                                                        minWidth: 0,
+                                                        '& .MuiButton-startIcon': {
+                                                            margin: 1,
+                                                        },
+                                                        '&:hover': {
+                                                            color: 'primary.main'
+                                                        },
+                                                    }}
+                                                />
+                                            </Box>
+                                        </CardActions>
+                                    </Box>
+                                </Card>
                             </Grid>
                         ))
                     ) : (

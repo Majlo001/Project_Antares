@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, TextField, Button, Typography } from '@mui/material';
+import { Google as GoogleIcon, Facebook as FacebookIcon, GitHub as GitHubIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onLogin, onRegister }) => {
@@ -48,7 +49,7 @@ const LoginForm = ({ onLogin, onRegister }) => {
     };
 
     return (
-        <Box sx={{ width: '100%', maxWidth: 400, mx: 'auto', mt: 4 }}>
+        <Box sx={{ width: '100%', maxWidth: 480, mx: 'auto', mt: 4 }}>
             <Tabs
                 value={activeTab}
                 onChange={(e, newValue) => setActiveTab(newValue)}
@@ -78,6 +79,36 @@ const LoginForm = ({ onLogin, onRegister }) => {
                         onChange={onChangeHandler}
                         fullWidth
                     />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<GoogleIcon />}
+                            fullWidth
+                            sx={{ mr: 1 }}
+                        >
+                            Google
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<FacebookIcon />}
+                            fullWidth
+                            sx={{ mx: 1 }}
+                        >
+                            Facebook
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<GitHubIcon />}
+                            fullWidth
+                            sx={{ ml: 1 }}
+                        >
+                            GitHub
+                        </Button>
+                    </Box>
                     
                     <Button type="submit" variant="contained" color="primary" fullWidth>
                         Sign in
