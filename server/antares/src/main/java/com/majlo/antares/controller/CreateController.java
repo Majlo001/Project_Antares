@@ -170,7 +170,7 @@ public class CreateController {
     public void createArtists() {
         Artist artist1 = new Artist();
         artist1.setName("Metallica");
-        artist1.setMainImage("/api/images/files/9f2e7251-897a-411d-ad88-01da01505f69.jpg");
+        artist1.setMainImage("/api/images/files/1687f920-5442-4f48-930a-12533bc7e1bc.jpg");
         artist1.setDescription("Metallica is an American heavy metal band. The band was formed in 1981 in Los Angeles by vocalist/guitarist James Hetfield and drummer Lars Ulrich, and has been based in San Francisco for most of its career. The band's fast tempos, instrumentals and aggressive musicianship made them one of the founding 'big four' bands of thrash metal, alongside Megadeth, Anthrax and Slayer. Metallica's current lineup comprises founding members and primary songwriters Hetfield and Ulrich, longtime lead guitarist Kirk Hammett, and bassist Robert Trujillo. Guitarist Dave Mustaine (who formed Megadeth) and bassists Ron McGovney, Cliff Burton and Jason Newsted are former members of the band.");
         artist1.setWebsiteUrl("https://www.metallica.com/");
         artist1.setFacebookUrl("https://www.facebook.com/Metallica");
@@ -180,7 +180,7 @@ public class CreateController {
 
         Artist artist2 = new Artist();
         artist2.setName("Arctic Monkeys");
-        artist2.setMainImage("/api/images/files/ebd00d6d-3346-4125-b641-267990d572f5.jpg");
+        artist2.setMainImage("/api/images/files/0c665339-e933-49e1-ae4c-62db4bebe6fe.jpg");
         artist2.setDescription("Arctic Monkeys are an English rock band formed in Sheffield in 2002. The group consists of Alex Turner (lead vocals, guitar, keyboards), Jamie Cook (guitar, keyboards), Nick O'Malley (bass guitar, backing vocals), and Matt Helders (drums, backing vocals). Former band member Andy Nicholson (bass guitar, backing vocals) left the band in 2006 shortly after their debut album was released.");
         artist2.setWebsiteUrl("https://www.arcticmonkeys.com/");
         artist2.setFacebookUrl("https://www.facebook.com/ArcticMonkeys");

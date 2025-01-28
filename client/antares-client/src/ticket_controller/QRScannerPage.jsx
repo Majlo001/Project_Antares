@@ -99,50 +99,25 @@ const QRScannerPage = () => {
                 }}
             ></video>
 
-            {scannedData && (
-                <Box mt={2}>
-                    <Typography variant="body1">
-                        Ticket ID: {ticketId}
-                    </Typography>
-                    <Typography variant="body1">
-                        Event Name: {eventName}
-                    </Typography>
-                    <Typography variant="body1">
-                        Event Location: {eventLocation}
-                    </Typography>
-                    <Typography variant="body1">
-                        Event Date: {eventDate}
-                    </Typography>
-                    <Typography variant="body1">
-                        Sector Name: {sectorName}
-                    </Typography>
-                    <Typography variant="body1">
-                        Row Number: {rowNumber}
-                    </Typography>
-                    <Typography variant="body1">
-                        Seat Number: {seatNumber}
-                    </Typography>
-                    <Typography variant="body1">
-                        Ticket Type: {ticketTypeName}
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                            setScannedData(null)
-                        }}
-                        sx={{ mt: 2 }}
-                    >
-                        Scan Again
-                    </Button>
-                </Box>
-            )}
-
-            {error && (
-                <Typography variant="body2" color="error" mt={2}>
-                    {error}
+            
+            <Box mt={2}>
+                <Typography variant="body1" color="error" mt={2}>
+                    Scanned code is not valid and has likely been counterfeited.
                 </Typography>
-            )}
+                
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                        setScannedData(null)
+                    }}
+                    sx={{ mt: 2 }}
+                >
+                    Scan Again
+                </Button>
+            </Box>
+
+            
         </Box>
     );
 };

@@ -304,7 +304,7 @@ const AdminEventsPage = () => {
             />
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        {/* <Grid item xs={12} sm={4}>
           <FormControl fullWidth variant="outlined">
             <Autocomplete
               value={filters.type || ""}
@@ -315,7 +315,7 @@ const AdminEventsPage = () => {
               )}
             />
           </FormControl>
-        </Grid>
+        </Grid> */}
       </Grid>
 
       {/* Event Table */}
@@ -329,7 +329,7 @@ const AdminEventsPage = () => {
               <TableCell>City</TableCell>
               <TableCell>Category</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Public</TableCell>
+              {/* <TableCell>Public</TableCell> */}
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -342,13 +342,13 @@ const AdminEventsPage = () => {
                 <TableCell>{event.city}</TableCell>
                 <TableCell>{event.category}</TableCell>
                 <TableCell>{event.status}</TableCell>
-                <TableCell>
+                {/* <TableCell>
                     {event.isPublic ? (
                         <CheckCircleRoundedIcon style={{ color: 'green' }} />
                     ) : (
                         <UnpublishedRoundedIcon style={{ color: 'red' }} />
                     )}
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <IconButton onClick={() => handleDashboard(event.eventId)}>
                     <DashboardIcon />
@@ -356,9 +356,9 @@ const AdminEventsPage = () => {
                   <IconButton onClick={() => handleEdit(event.eventId)}>
                     <EditIcon />
                   </IconButton>
-                  {/* <IconButton onClick={() => handleDelete(event.id)} color="error">
+                  <IconButton color="error">
                     <DeleteIcon />
-                  </IconButton> */}
+                  </IconButton>
                   <IconButton onClick={() => handleLaunch(event.eventId)}>
                     <LaunchIcon />
                   </IconButton>

@@ -35,6 +35,8 @@ public class NewsletterService {
 
     public void removeSubscriber(String email) {
         NewsletterSubscriber subscriber = newsletterSubscriberRepository.findByEmail(email);
-        newsletterSubscriberRepository.delete(subscriber);
+        if (subscriber != null) {
+            newsletterSubscriberRepository.delete(subscriber);
+        }
     }
 }

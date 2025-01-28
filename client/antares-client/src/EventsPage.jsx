@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Grid, CircularProgress } from "@mui/material";
+import { Container, Grid, CircularProgress, Typography } from "@mui/material";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { request } from "./helpers/axios_helper";
 
@@ -60,7 +60,9 @@ const EventsPage = () => {
                                 </Grid>
                             ))
                         ) : (
-                            <p>No events found</p>
+                            <Typography variant="h6" component="p">
+                                No events found
+                            </Typography>
                         )}
                     </Grid>
                 )}

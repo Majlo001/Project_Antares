@@ -37,7 +37,7 @@ const EventDetail = () => {
 
     // {formatTime(event.eventDateStart)}
     return (
-        <Grid container spacing={2} sx={{ mt: 4 }}>
+        <Grid container spacing={2} >
             <Grid item xs={12} md={3}>
                 <Box sx={{ mx: 'auto', p: 2 }}>
                     <Box

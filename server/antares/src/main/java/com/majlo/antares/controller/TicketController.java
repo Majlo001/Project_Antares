@@ -122,7 +122,6 @@ public class TicketController {
             return ResponseEntity.ok(validationInfoDto);
         }
 
-        System.out.println("Chuja nie działa");
         return ResponseEntity.badRequest().build();
     }
 

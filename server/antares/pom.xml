@@ -171,8 +171,11 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.2</version>
 				<configuration>
-					<skipTests>true</skipTests>
+					<argLine>--enable-preview</argLine>
 				</configuration>
+<!--				<configuration>-->
+<!--					<skipTests>true</skipTests>-->
+<!--				</configuration>-->
 			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

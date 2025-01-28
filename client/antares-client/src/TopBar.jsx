@@ -51,17 +51,17 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
         <AppBar position="static" sx={{ mb: 4 }}>
             <Toolbar>
                 <Typography variant="h6" component="div" 
-                    sx={{cursor: 'pointer' }}
+                    sx={{cursor: 'pointer'}}
                     onClick={() => {
                         navigate("/");
                     }}
                 >
-                Antares Ticket App
+                Ticket App
                 </Typography>
 
 
                 <Box sx={{ flexGrow: 1, marginLeft: 4, marginRight: 4 }}>
-                    {isLoggedIn && getRole() !== 'EVENT_OWNER' && (
+                    {/* {isLoggedIn && getRole() !== 'EVENT_OWNER' && (
                         <Typography
                             variant="h6"
                             component="div"
@@ -84,8 +84,12 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
                         >
                             Ticket Controller
                         </Typography>
-                    )}
+                    )} */}
                 </Box>
+
+                {/* <Typography variant="h6" component="div" sx={{ mr: 2 }}>
+                    7:39
+                </Typography> */}
 
                 <IconButton 
                 color="inherit"
@@ -120,9 +124,10 @@ function TopBar({ isLoggedIn, userName, onLogout }) {
                             horizontal: 'right',
                         }}
                     >
+                        <MenuItem disabled>Logged in as {userName}</MenuItem>
                         <MenuItem onClick={() => { handleMenuClose(); handleOnShowTickets(); }}>Tickets</MenuItem>
                         <MenuItem onClick={() => { handleMenuClose(); handleOnShowTransactions(); }}>Transactions</MenuItem>
-                        <MenuItem onClick={() => { handleMenuClose(); handleOnSettings(); }}>Account Settings</MenuItem>
+                        {/* <MenuItem onClick={() => { handleMenuClose(); handleOnSettings(); }}>Account Settings</MenuItem> */}
                         <MenuItem onClick={() => { handleMenuClose(); onLogout(); }}>Log Out</MenuItem>
                     </Menu>
                 </Box>

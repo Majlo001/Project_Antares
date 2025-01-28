@@ -31,10 +31,18 @@ const EventList = () => {
     }, []);
 
     return (
-        <Container maxWidth="xl" sx={{ mt: 4 }}>
+        <Container maxWidth="xl" sx={{ mt: 0 }}>
             <EventSearchBar />
             <Typography variant="h4" component="h2" gutterBottom>
                 Current Events
+            </Typography>
+    
+            <EventSlider
+                events={events}
+            />
+            
+            <Typography variant="h4" component="h2" gutterBottom sx={{ mt: 2 }}>
+                Recommend Events
             </Typography>
     
             <EventSlider

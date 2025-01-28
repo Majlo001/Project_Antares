@@ -14,43 +14,37 @@ const AdminPanelSidebar = ({ isLoggedIn, userName }) => {
         {location.pathname.startsWith('/admin') && (
             <Drawer
                 sx={{
-                    // width: drawerWidth,
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
-                        // width: drawerWidth,
                         boxSizing: 'border-box',
+                        width: drawerWidth,
                         paddingTop: 6,
                         paddingBottom: 6,
+                        backgroundColor: '#f5f5f5',
                     },
                 }}
                 variant="permanent"
                 anchor="left"
             >
-                <Box sx={{ p: 2 }}>
-                    <Typography variant="h6">Antares Admin Panel</Typography>
+                <Box sx={{ p: 2, textAlign: 'center', backgroundColor: '#FF8D21', color: '#fff' }}>
+                    <Typography variant="h6">Event Owner Panel</Typography>
                 </Box>
                 <List sx={{ flexGrow: 1 }}>
-                    <ListItem button>
-                        <ListItemText
-                            primary="Menage Events"
-                            onClick={() => navigate('/admin/events')}
-                            sx={{ cursor: 'pointer'}} />
+                    <ListItem button onClick={() => navigate('/admin/events')}>
+                        <ListItemText primary="Manage Events" sx={{ cursor: 'pointer' }} />
                     </ListItem>
-                    <ListItem button>
-                        <ListItemText
-                            primary="Create Event"
-                            onClick={() => navigate('/admin/form/event')}
-                            sx={{ cursor: 'pointer'}} />
+                    <ListItem button onClick={() => navigate('/admin/form/event')}>
+                        <ListItemText primary="Create Event" sx={{ cursor: 'pointer' }} />
                     </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Menage Event Series" />
+                    <ListItem button onClick={() => navigate('/admin/event-series')}>
+                        <ListItemText primary="Manage Event Series" sx={{ cursor: 'pointer' }} />
                     </ListItem>
-                    <ListItem button>
-                        <ListItemText primary="Create Event Series" />
+                    <ListItem button onClick={() => navigate('/admin/form/event-series')}>
+                        <ListItemText primary="Create Event Series" sx={{ cursor: 'pointer' }} />
                     </ListItem>
                 </List>
-                <Box sx={{ p: 2 }}>
-                    <Typography>{userName}</Typography>
+                <Box sx={{ p: 2, textAlign: 'center', borderTop: '1px solid #ddd' }}>
+                    <Typography variant="body1">{userName}</Typography>
                 </Box>
             </Drawer>
         )}

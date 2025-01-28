@@ -178,7 +178,7 @@ const UserTickets = () => {
                                                     </Grid>
                                                     <Grid item xs={12}>
                                                         <Typography variant="body2">
-                                                            seat: <strong>{ticket.seatNumber}</strong>
+                                                            Seat: <strong>{ticket.seatNumber}</strong>
                                                         </Typography>
                                                     </Grid>
                                                 </Grid>
@@ -341,7 +341,7 @@ const UserTickets = () => {
                                                         </Grid>
                                                         <Grid item xs={12}>
                                                             <Typography variant="body2">
-                                                                seat: <strong>{ticket.seatNumber}</strong>
+                                                                Seat: <strong>{ticket.seatNumber}</strong>
                                                             </Typography>
                                                         </Grid>
                                                     </Grid>

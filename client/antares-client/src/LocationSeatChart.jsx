@@ -1,13 +1,21 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Stage, Layer, Rect, Text, Group } from "react-konva";
-import { Box, Typography, Badge } from '@mui/material';
-import AccessibleRoundedIcon from '@mui/icons-material/AccessibleRounded';
+import { Stage, Layer, Rect, Text, Group, Image } from "react-konva";
+import { Box, Typography, Button } from '@mui/material';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { request } from "./helpers/axios_helper";
+import accessibleIconSrc from './icons/accessible_icon.png';
 import { useParams } from "react-router-dom";
 import { set } from "date-fns";
 import { CartContext } from './contexts/CartContext';
 
 const LocationSeatChart = () => {
+    const [accessibleIcon, setAccessibleIcon] = useState(null);
+
+    useEffect(() => {
+        const img = new window.Image();
+        img.src = accessibleIconSrc;
+        img.onload = () => setAccessibleIcon(img);
+    }, []);
     const { updateCart } = useContext(CartContext);
 
     const { eventId } = useParams();
@@ -165,7 +173,14 @@ const LocationSeatChart = () => {
 
 
     return (
-        <div style={{ position: 'relative' }}>
+        <>
+        <Box sx={{ width: '100%', mb: 2 }}>
+            <Typography variant="h6" component="h2" gutterBottom sx={{ textAlign: 'left', width: '100%', margin: '0 32px' }}>
+                Warsaw, {locationName} | 03.02.2025 18:00
+            </Typography>
+        </Box>
+
+        <div style={{ position: 'relative', border: '1px solid black', width: '100%', height: '800px', overflow: 'hidden' }}>
             {seatTooltip.visible && (
                 <Box
                     sx={{
@@ -309,7 +324,7 @@ const LocationSeatChart = () => {
                                             <Group
                                                 key={seatIndex}
                                                 onMouseOver={() => {
-                                                    const tooltipX = seatX * scale + position.x - 200 - Math.ceil(10 * scale);
+                                                    const tooltipX = seatX * scale + position.x - 220 - Math.ceil(10 * scale);
                                                     const tooltipY = seatY * scale + position.y;
 
                                                     if (seat.seatAvailable) {
@@ -329,7 +344,6 @@ const LocationSeatChart = () => {
                                                 }}
                                                 onClick={() => handleSeatClick(seat)}
                                             >
-                                                
                                                 <Rect
                                                     x={seatX}
                                                     y={seatY}
@@ -340,22 +354,19 @@ const LocationSeatChart = () => {
                                                     stroke="black"
                                                     strokeWidth={1}
                                                 />
-                                                {/* {seat.seatForDisabled && (
-                                                    <div
-                                                        style={{
-                                                            position: 'absolute',
-                                                            left: seatX * scale + position.x,
-                                                            top: seatY * scale + position.y,
-                                                            transform: `rotate(${seatRotation}deg)`,
-                                                            fontSize: 10,
-                                                            color: 'yellow',
-                                                            pointerEvents: 'none',
-                                                            zIndex: 1000,
-                                                        }}
-                                                    >
-                                                        <AccessibleRoundedIcon />
-                                                    </div>
-                                                )} */}
+                                                {/* seat.seatForDisabled */}
+                                                {row.rowNumber === 20 && (
+                                                    <Image
+                                                        x={seatX}
+                                                        y={seatY}
+                                                        rotation={seatRotation}
+                                                        width={10}
+                                                        height={10}
+                                                        image={accessibleIcon}
+                                                        offsetX={0}
+                                                        offsetY={0}
+                                                    />
+                                                )}
                                                 {/* <Text
                                                     text={isSelected ? "" : !seat.seatAvailable ? "" : seat.seatNumber}
                                                     pointerEvents="none"
@@ -378,8 +389,65 @@ const LocationSeatChart = () => {
                         </React.Fragment>
                     ))}
                 </Layer>
+
+                <Layer>
+                    <Rect
+                        x={430}
+                        y={50}
+                        width={400}
+                        height={250}
+                        fill="lightgreen"
+                        opacity={0.6}
+                        stroke="black"
+                        strokeWidth={2}
+                        strokeOpacity={1}
+                    />
+                    <Rect
+                        x={850}
+                        y={50}
+                        width={400}
+                        height={250}
+                        fill="lightgreen"
+                        opacity={0.6}
+                        stroke="black"
+                        strokeWidth={2}
+                        strokeOpacity={1}
+                    />
+                </Layer>
+
+                <Layer>
+                    <Rect
+                        x={640}
+                        y={350}
+                        width={400}
+                        height={100}
+                        fill="gray"
+                        stroke="black"
+                        strokeWidth={2}
+                    />
+                    <Text
+                        text="STAGE"
+                        fontSize={36}
+                        fill="white"
+                        x={630 + 200}
+                        y={350 + 50}
+                        align="center"
+                        verticalAlign="middle"
+                        offsetX={46}
+                        offsetY={16}
+                    />
+                </Layer>
+
+
             </Stage>
         </div>
+
+        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', mt: 2, mr: 2 }}>
+            <Button variant="contained" color="primary" onClick={() => window.location.href = '/cart'} startIcon={<ShoppingCartIcon />}>
+                Go to Cart
+            </Button>
+        </Box>
+        </>
     );
 };
 
